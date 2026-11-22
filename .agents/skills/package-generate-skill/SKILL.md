@@ -39,7 +39,7 @@ Keep the package's bundled Boost skill accurate, concise, and focused on helping
 - `routes/*.php`
 - `database/migrations/`
 - `README.md`
-- `tests/Feature/` and `tests/Unit/`
+- `tests/` (mirrors the `src/` structure)
 
 ## Examples
 

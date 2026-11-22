@@ -47,7 +47,7 @@ Provider wiring anti-patterns:
 - `database/migrations/`
 - `public/`
 - `src/Console/Commands/`
-- `tests/Feature/` and `tests/Unit/`
+- `tests/` (mirrors the `src/` structure)
 
 ## Examples
 
