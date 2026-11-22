@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace BotDetector\BotDetector\Facades;
+namespace SimoneCerruti\BotDetector\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @see \BotDetector\BotDetector\BotDetector
+ * @see \SimoneCerruti\BotDetector\BotDetector
  */
 class BotDetector extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return \BotDetector\BotDetector\BotDetector::class;
+        return \SimoneCerruti\BotDetector\BotDetector::class;
     }
 }

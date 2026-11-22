@@ -2,6 +2,6 @@
 
 declare(strict_types=1);
 
-use BotDetector\BotDetector\Tests\TestCase;
+use SimoneCerruti\BotDetector\Tests\TestCase;
 
-uses(TestCase::class)->in(__DIR__);
+pest()->extend(TestCase::class)->in(__DIR__);

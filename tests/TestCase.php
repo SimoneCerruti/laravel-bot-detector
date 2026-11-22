@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace BotDetector\BotDetector\Tests;
+namespace SimoneCerruti\BotDetector\Tests;
 
-use BotDetector\BotDetector\BotDetectorServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
+use SimoneCerruti\BotDetector\BotDetectorServiceProvider;
 
 abstract class TestCase extends Orchestra
 {

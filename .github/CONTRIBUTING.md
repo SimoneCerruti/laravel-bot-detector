@@ -13,7 +13,7 @@ For significant changes, please open an issue first so we can discuss the approa
 
 ## Guidelines
 
-- Ensure the coding style passes by running `composer lint`.
+- Ensure the coding style passes by running `composer pint`.
 - Send a coherent commit history, making sure each commit in your pull request is meaningful.
 - You may need to [rebase](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) to avoid merge conflicts.
 - Please remember that we follow [SemVer](http://semver.org/).
@@ -31,7 +31,7 @@ composer install
 Lint your code:
 
 ```bash
-composer lint
+composer pint
 ```
 
 ## Tests
@@ -40,4 +40,10 @@ Run all tests:
 
 ```bash
 composer test
+```
+
+Run the full quality suite (static analysis, Rector, Pint, type coverage, tests):
+
+```bash
+composer qa
 ```

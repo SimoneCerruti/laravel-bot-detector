@@ -15,7 +15,7 @@ Prepare a safe package release checklist and implementation without tagging, pus
 ## Workflow
 
 1. Review `CHANGELOG.md`, generated release notes config, GitHub release workflows, open diff, and pending package changes.
-2. Validate the release state with `composer test` before recommending a release.
+2. Validate the release state with `composer qa` before recommending a release.
 3. Confirm whether version metadata needs to change; many Laravel packages rely on Git tags rather than a hardcoded package version.
 4. Review tag naming, release branch, and GitHub release workflow behavior before any release command.
 5. Do not tag, push, or publish without explicit user approval.
@@ -30,12 +30,12 @@ Prepare a safe package release checklist and implementation without tagging, pus
 
 ## Examples
 
-- Prepare a release by checking changelog coverage, confirming generated release notes categories, running `composer test`, and drafting the tag command for user approval.
+- Prepare a release by checking changelog coverage, confirming generated release notes categories, running `composer qa`, and drafting the tag command for user approval.
 - Update release notes grouping in `.github/release.yml` when a new label convention is added.
 
 ## Anti-Patterns
 
 - Creating tags, pushing branches, or publishing releases without explicit approval.
-- Skipping `composer test` before a release recommendation.
+- Skipping `composer qa` before a release recommendation.
 - Treating generated release notes as a replacement for meaningful `CHANGELOG.md` entries.
 - Changing release workflows without checking the supported matrix in `.github/workflows/tests.yml`.

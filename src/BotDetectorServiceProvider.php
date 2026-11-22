@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace BotDetector\BotDetector;
+namespace SimoneCerruti\BotDetector;
 
-use BotDetector\BotDetector\Console\Commands\BotDetectorCommand;
 use Illuminate\Support\ServiceProvider;
 
 class BotDetectorServiceProvider extends ServiceProvider
@@ -14,7 +13,7 @@ class BotDetectorServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/laravel-bot-detector.php', 'laravel-bot-detector');
+        $this->mergeConfigFrom(__DIR__.'/../config/bot-detector.php', 'bot-detector');
 
         $this->app->singleton(BotDetector::class);
     }
@@ -29,15 +28,7 @@ class BotDetectorServiceProvider extends ServiceProvider
         }
 
         $this->publishes([
-            __DIR__.'/../config/laravel-bot-detector.php' => config_path('laravel-bot-detector.php'),
-        ], ['laravel-bot-detector', 'laravel-bot-detector-config']);
-
-        $this->publishesMigrations([
-            __DIR__.'/../database/migrations' => database_path('migrations'),
-        ], ['laravel-bot-detector', 'laravel-bot-detector-migrations']);
-
-        $this->commands([
-            BotDetectorCommand::class,
-        ]);
+            __DIR__.'/../config/bot-detector.php' => config_path('bot-detector.php'),
+        ], ['bot-detector', 'bot-detector-config']);
     }
 }

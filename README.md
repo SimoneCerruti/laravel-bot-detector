@@ -23,7 +23,7 @@ composer require simonecerruti/laravel-bot-detector
 You may publish all of the package's resources at once:
 
 ```bash
-php artisan vendor:publish --tag="laravel-bot-detector"
+php artisan vendor:publish --tag="bot-detector"
 ```
 
 Or, you may publish each resource individually:
@@ -31,14 +31,7 @@ Or, you may publish each resource individually:
 ### Publishing the Configuration File
 
 ```bash
-php artisan vendor:publish --tag="laravel-bot-detector-config"
-```
-
-### Publishing and Running the Migrations
-
-```bash
-php artisan vendor:publish --tag="laravel-bot-detector-migrations"
-php artisan migrate
+php artisan vendor:publish --tag="bot-detector-config"
 ```
 
 ## Usage
