@@ -28,3 +28,13 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
 - `package-release`: use when preparing changelog, release notes, tags, or GitHub release workflow changes.
 - `package-compatibility`: use when reviewing code, dependencies, or CI against the PHP and Laravel support matrix.
 - `package-generate-skill`: use when updating the bundled Boost skill from the package implementation, README, and examples.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues for SimoneCerruti/laravel-bot-detector, managed with the `gh` CLI. Specs and tickets get the `ready-for-agent` label. See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root, created lazily. See `docs/agents/domain.md`.

@@ -36,6 +36,10 @@ jobs:
             testbench: 10.*
           - laravel: 13.*
             testbench: 11.*
+        exclude:
+          # On PHP 8.6 only paratest releases that need PHPUnit 13 install, which Pest 4 rejects and Testbench 10 conflicts with.
+          - php: 8.6
+            laravel: 12.*
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
 
