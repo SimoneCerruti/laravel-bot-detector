@@ -6,6 +6,7 @@ namespace SimoneCerruti\BotDetector;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
+use SimoneCerruti\BotDetector\Contracts\DnsResolver;
 use SimoneCerruti\BotDetector\Data\Detection;
 
 final class BotDetectorServiceProvider extends ServiceProvider {
@@ -16,6 +17,7 @@ final class BotDetectorServiceProvider extends ServiceProvider {
         $this->mergeConfigFrom(__DIR__.'/../config/bot-detector.php', 'bot-detector');
 
         $this->app->singleton(BotDetector::class);
+        $this->app->bind(DnsResolver::class, SystemDnsResolver::class);
     }
 
     /**

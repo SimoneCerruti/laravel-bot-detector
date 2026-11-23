@@ -14,6 +14,7 @@ use Spatie\LaravelData\Data;
 final class RequestFingerprint extends Data {
     public function __construct(
         public readonly ?string $user_agent,
+        public readonly ?string $ip,
         public readonly bool $secure,
         public readonly ?string $accept,
         public readonly ?string $accept_language,
@@ -26,6 +27,7 @@ final class RequestFingerprint extends Data {
     public static function fromRequest(Request $request): self {
         return new self(
             user_agent: $request->headers->get('User-Agent'),
+            ip: $request->ip(),
             secure: $request->secure(),
             accept: $request->headers->get('Accept'),
             accept_language: $request->headers->get('Accept-Language'),
