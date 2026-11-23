@@ -13,6 +13,8 @@ use SimoneCerruti\BotDetector\Facades\BotDetector as BotDetectorFacade;
 use SimoneCerruti\BotDetector\Signals\MissingAccept;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptEncoding;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptLanguage;
+use SimoneCerruti\BotDetector\Signals\MissingSecChUa;
+use SimoneCerruti\BotDetector\Signals\MissingSecFetchSite;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -28,6 +30,8 @@ const PUBLIC_API = [
     MissingAcceptLanguage::class,
     MissingAccept::class,
     MissingAcceptEncoding::class,
+    MissingSecFetchSite::class,
+    MissingSecChUa::class,
 ];
 
 arch()->preset()->php();

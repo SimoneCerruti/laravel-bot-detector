@@ -5,6 +5,8 @@ declare(strict_types=1);
 use SimoneCerruti\BotDetector\Signals\MissingAccept;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptEncoding;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptLanguage;
+use SimoneCerruti\BotDetector\Signals\MissingSecChUa;
+use SimoneCerruti\BotDetector\Signals\MissingSecFetchSite;
 
 return [
 
@@ -14,6 +16,8 @@ return [
      * to disable it, or change a weight to tune it.
      */
     'signals' => [
+        MissingSecFetchSite::class => 3,
+        MissingSecChUa::class => 3,
         MissingAcceptLanguage::class => 3,
         MissingAccept::class => 2,
         MissingAcceptEncoding::class => 1,
