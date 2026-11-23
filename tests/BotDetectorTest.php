@@ -33,6 +33,27 @@ it('becomes suspicious exactly at the suspicious threshold', function (int $thre
     'above the score' => [4, Verdict::Human],
 ]);
 
+it('becomes automated exactly at the automated threshold', function (int $threshold, Verdict $verdict): void {
+    config(['bot-detector.automated_at' => $threshold]);
+
+    expect(BotDetector::detect(browserRequest(['Accept-Language' => null]))->verdict)->toBe($verdict);
+})->with([
+    'below the score' => [2, Verdict::Automated],
+    'equal to the score' => [3, Verdict::Automated],
+    'above the score' => [4, Verdict::Suspicious],
+]);
+
+it('keeps a request missing only Accept-Encoding human', function (): void {
+    expect(BotDetector::detect(browserRequest(['Accept-Encoding' => null]))->verdict)->toBe(Verdict::Human);
+});
+
+it('marks a request missing Accept-Language and Accept as automated', function (): void {
+    $detection = BotDetector::detect(browserRequest(['Accept-Language' => null, 'Accept' => null]));
+
+    expect($detection->verdict)->toBe(Verdict::Automated)
+        ->and($detection->score)->toBe(5);
+});
+
 it('evaluates a custom signal registered in config', function (): void {
     config(['bot-detector.signals' => [MissingAcceptLanguage::class => 3, AlwaysMatchingSignal::class => 1]]);
 
@@ -49,6 +70,13 @@ it('does not evaluate a signal removed from config', function (): void {
 });
 
 it('exposes what arrived in the fingerprint', function (): void {
-    expect(BotDetector::detect(browserRequest(['Accept-Language' => 'en-US']))->fingerprint->accept_language)
-        ->toBe('en-US');
+    $fingerprint = BotDetector::detect(browserRequest([
+        'Accept' => 'text/html',
+        'Accept-Language' => 'en-US',
+        'Accept-Encoding' => 'gzip',
+    ]))->fingerprint;
+
+    expect($fingerprint->accept)->toBe('text/html')
+        ->and($fingerprint->accept_language)->toBe('en-US')
+        ->and($fingerprint->accept_encoding)->toBe('gzip');
 });

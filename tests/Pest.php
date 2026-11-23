@@ -15,7 +15,12 @@ pest()->extend(TestCase::class)->in(__DIR__);
 function browserRequest(array $headers = []): Request {
     $request = Request::create('/');
 
-    foreach (['Accept-Language' => 'it-IT,it;q=0.9,en;q=0.8', ...$headers] as $name => $value) {
+    foreach ([
+        'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language' => 'it-IT,it;q=0.9,en;q=0.8',
+        'Accept-Encoding' => 'gzip, deflate, br, zstd',
+        ...$headers,
+    ] as $name => $value) {
         // Request::create() adds defaults for some headers, so a missing header must be removed explicitly.
         $value === null ? $request->headers->remove($name) : $request->headers->set($name, $value);
     }

@@ -13,12 +13,16 @@ use Spatie\LaravelData\Data;
  */
 final class RequestFingerprint extends Data {
     public function __construct(
+        public readonly ?string $accept,
         public readonly ?string $accept_language,
+        public readonly ?string $accept_encoding,
     ) {}
 
     public static function fromRequest(Request $request): self {
         return new self(
+            accept: $request->headers->get('Accept'),
             accept_language: $request->headers->get('Accept-Language'),
+            accept_encoding: $request->headers->get('Accept-Encoding'),
         );
     }
 }

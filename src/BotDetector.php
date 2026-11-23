@@ -40,7 +40,11 @@ final class BotDetector {
         $score = array_sum($signals);
 
         return new Detection(
-            verdict: $score >= config()->integer('bot-detector.suspicious_at') ? Verdict::Suspicious : Verdict::Human,
+            verdict: match (true) {
+                $score >= config()->integer('bot-detector.automated_at') => Verdict::Automated,
+                $score >= config()->integer('bot-detector.suspicious_at') => Verdict::Suspicious,
+                default => Verdict::Human,
+            },
             score: $score,
             signals: $signals,
             fingerprint: $fingerprint,
