@@ -15,7 +15,7 @@ use function Safe\inet_pton;
  * @internal
  */
 final class SystemDnsResolver implements DnsResolver {
-    public function hostnames(string $ip): ?array {
+    public function lookupHostnames(string $ip): ?array {
         // PTR name: reversed IPv4 octets, or reversed IPv6 nibbles.
         $name = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false
             ? implode('.', array_reverse(explode('.', $ip))).'.in-addr.arpa'
@@ -24,7 +24,7 @@ final class SystemDnsResolver implements DnsResolver {
         return $this->lookup($name, DNS_PTR, 'target');
     }
 
-    public function addresses(string $hostname): ?array {
+    public function lookupAddresses(string $hostname): ?array {
         $ipv4 = $this->lookup($hostname, DNS_A, 'ip');
         $ipv6 = $this->lookup($hostname, DNS_AAAA, 'ipv6');
 

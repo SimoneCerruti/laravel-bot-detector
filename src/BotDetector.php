@@ -54,7 +54,7 @@ final class BotDetector {
         $probe_paths = config()->array('bot-detector.probe_paths.paths');
         $probed = config()->boolean('bot-detector.probe_paths.enabled') && Str::is($probe_paths, $fingerprint->path);
 
-        $suffixes = $this->goodBotSuffixes($fingerprint->user_agent);
+        $suffixes = $this->findGoodBotSuffixes($fingerprint->user_agent);
         $verified = $suffixes === null ? null : $this->verify($fingerprint->ip, $suffixes);
 
         return new Detection(
@@ -117,7 +117,7 @@ final class BotDetector {
      *
      * @return list<string>|null
      */
-    private function goodBotSuffixes(?string $user_agent): ?array {
+    private function findGoodBotSuffixes(?string $user_agent): ?array {
         /** @var array<string, list<string>> $bots */
         $bots = config()->array('bot-detector.good_bots.bots');
 
@@ -140,7 +140,7 @@ final class BotDetector {
         $hostnames = Cache::get($key);
 
         if ($hostnames === null) {
-            $hostnames = $this->confirmedHostnames($ip);
+            $hostnames = $this->resolveConfirmedHostnames($ip);
 
             if ($hostnames === null) {
                 return null;
@@ -158,11 +158,11 @@ final class BotDetector {
      *
      * @return list<string>|null
      */
-    private function confirmedHostnames(string $ip): ?array {
+    private function resolveConfirmedHostnames(string $ip): ?array {
         /** @var list<string> $suffixes */
         $suffixes = Arr::flatten(config()->array('bot-detector.good_bots.bots'));
         $resolver = app(DnsResolver::class);
-        $hostnames = $resolver->hostnames($ip);
+        $hostnames = $resolver->lookupHostnames($ip);
 
         if ($hostnames === null) {
             return null;
@@ -177,7 +177,7 @@ final class BotDetector {
                 continue;
             }
 
-            $addresses = $resolver->addresses($hostname);
+            $addresses = $resolver->lookupAddresses($hostname);
 
             if ($addresses === null) {
                 return null;

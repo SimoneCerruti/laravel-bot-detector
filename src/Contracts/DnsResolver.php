@@ -15,12 +15,12 @@ interface DnsResolver {
      *
      * @return list<string>|null
      */
-    public function hostnames(string $ip): ?array;
+    public function lookupHostnames(string $ip): ?array;
 
     /**
      * The IPv4 and IPv6 addresses of the hostname (A and AAAA records), or null when the lookup failed.
      *
      * @return list<string>|null
      */
-    public function addresses(string $hostname): ?array;
+    public function lookupAddresses(string $hostname): ?array;
 }

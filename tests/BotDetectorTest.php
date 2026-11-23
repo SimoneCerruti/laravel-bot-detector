@@ -199,7 +199,7 @@ const GOOGLEBOT = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.co
  * @param  array<string, list<string>|null>  $hostnames
  * @param  array<string, list<string>|null>  $addresses
  */
-function fakeDns(array $hostnames = [], array $addresses = []): FakeDnsResolver {
+function bindFakeDns(array $hostnames = [], array $addresses = []): FakeDnsResolver {
     $resolver = new FakeDnsResolver($hostnames, $addresses);
     app()->instance(DnsResolver::class, $resolver);
 
@@ -207,7 +207,7 @@ function fakeDns(array $hostnames = [], array $addresses = []): FakeDnsResolver 
 }
 
 it('verifies a default good bot by reverse and forward DNS', function (string $user_agent, string $hostname): void {
-    fakeDns(['192.0.2.1' => [$hostname]], [$hostname => ['192.0.2.1']]);
+    bindFakeDns(['192.0.2.1' => [$hostname]], [$hostname => ['192.0.2.1']]);
 
     $detection = BotDetector::detect(browserRequest(['User-Agent' => $user_agent], ip: '192.0.2.1'));
 
@@ -225,7 +225,7 @@ it('verifies a default good bot by reverse and forward DNS', function (string $u
 ]);
 
 it('verifies a good bot on IPv6 whatever the address notation', function (): void {
-    fakeDns(
+    bindFakeDns(
         ['2001:4860:4801:10::1' => ['crawl-2001-4860-4801-10--1.googlebot.com']],
         ['crawl-2001-4860-4801-10--1.googlebot.com' => ['2001:4860:4801:0010:0000:0000:0000:0001']],
     );
@@ -234,13 +234,13 @@ it('verifies a good bot on IPv6 whatever the address notation', function (): voi
 });
 
 it('matches the reverse DNS hostname regardless of case', function (): void {
-    fakeDns(['192.0.2.1' => ['CRAWL-66-249-66-1.GOOGLEBOT.COM']], ['crawl-66-249-66-1.googlebot.com' => ['192.0.2.1']]);
+    bindFakeDns(['192.0.2.1' => ['CRAWL-66-249-66-1.GOOGLEBOT.COM']], ['crawl-66-249-66-1.googlebot.com' => ['192.0.2.1']]);
 
     expect(BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'))->verdict)->toBe(Verdict::GoodBot);
 });
 
 it('classifies a spoofed good bot as automated', function (array $hostnames, array $addresses): void {
-    fakeDns($hostnames, $addresses);
+    bindFakeDns($hostnames, $addresses);
 
     $detection = BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
 
@@ -257,7 +257,7 @@ it('classifies a spoofed good bot as automated', function (array $hostnames, arr
 ]);
 
 it('classifies a good bot as suspicious when DNS fails', function (array $hostnames, array $addresses): void {
-    fakeDns($hostnames, $addresses);
+    bindFakeDns($hostnames, $addresses);
 
     $detection = BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
 
@@ -270,20 +270,20 @@ it('classifies a good bot as suspicious when DNS fails', function (array $hostna
 
 it('does not resolve a reverse DNS hostname outside every good-bot suffix', function (): void {
     // A spoofer controls the DNS of its own domain, so failing that lookup must not soften the verdict.
-    fakeDns(['192.0.2.1' => ['host.example.com']], ['host.example.com' => null]);
+    bindFakeDns(['192.0.2.1' => ['host.example.com']], ['host.example.com' => null]);
 
     expect(BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'))->verdict)->toBe(Verdict::Automated);
 });
 
 it('does not look up DNS for a client that claims no good bot', function (string $user_agent): void {
-    $resolver = fakeDns();
+    $resolver = bindFakeDns();
 
     expect(BotDetector::detect(browserRequest(['User-Agent' => $user_agent]))->verified)->toBeNull()
         ->and($resolver->lookups)->toBe(0);
 })->with(['Chrome' => [browserRequest()->userAgent()], 'curl' => ['curl/8.5.0']]);
 
 it('caches the verification per IP', function (): void {
-    $resolver = fakeDns(['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => ['192.0.2.1']]);
+    $resolver = bindFakeDns(['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => ['192.0.2.1']]);
 
     BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
     $detection = BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
@@ -293,7 +293,7 @@ it('caches the verification per IP', function (): void {
 });
 
 it('does not let an IP cached for one good bot pass as another', function (): void {
-    fakeDns(['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => ['192.0.2.1']]);
+    bindFakeDns(['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => ['192.0.2.1']]);
 
     BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
 
@@ -301,7 +301,7 @@ it('does not let an IP cached for one good bot pass as another', function (): vo
 });
 
 it('caches a spoofed verification too', function (): void {
-    $resolver = fakeDns();
+    $resolver = bindFakeDns();
 
     BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
     BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
@@ -310,16 +310,16 @@ it('caches a spoofed verification too', function (): void {
 });
 
 it('does not cache a DNS error', function (): void {
-    fakeDns(['192.0.2.1' => null]);
+    bindFakeDns(['192.0.2.1' => null]);
     BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
 
-    fakeDns(['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => ['192.0.2.1']]);
+    bindFakeDns(['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => ['192.0.2.1']]);
 
     expect(BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'))->verdict)->toBe(Verdict::GoodBot);
 });
 
 it('keeps the verification cached for 24 hours by default', function (int $seconds, int $lookups): void {
-    $resolver = fakeDns();
+    $resolver = bindFakeDns();
 
     BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
     $this->travel($seconds)->seconds();
@@ -333,7 +333,7 @@ it('keeps the verification cached for 24 hours by default', function (int $secon
 
 it('keeps the verification cached for the configured TTL', function (): void {
     config(['bot-detector.good_bots.cache_ttl' => 60]);
-    $resolver = fakeDns();
+    $resolver = bindFakeDns();
 
     BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
     $this->travel(61)->seconds();
@@ -344,14 +344,14 @@ it('keeps the verification cached for the configured TTL', function (): void {
 
 it('verifies a good bot added to config', function (): void {
     config(['bot-detector.good_bots.bots' => ['/ExampleBot/' => ['.crawler.example.com']]]);
-    fakeDns(['192.0.2.1' => ['a.crawler.example.com']], ['a.crawler.example.com' => ['192.0.2.1']]);
+    bindFakeDns(['192.0.2.1' => ['a.crawler.example.com']], ['a.crawler.example.com' => ['192.0.2.1']]);
 
     expect(BotDetector::detect(browserRequest(['User-Agent' => 'ExampleBot/1.0'], ip: '192.0.2.1'))->verdict)->toBe(Verdict::GoodBot);
 });
 
 it('does not verify a good bot removed from config', function (): void {
     config(['bot-detector.good_bots.bots' => []]);
-    $resolver = fakeDns(['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => ['192.0.2.1']]);
+    $resolver = bindFakeDns(['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => ['192.0.2.1']]);
 
     $detection = BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
 
@@ -361,7 +361,7 @@ it('does not verify a good bot removed from config', function (): void {
 });
 
 it('verifies a good bot regardless of the score', function (): void {
-    fakeDns(['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => ['192.0.2.1']]);
+    bindFakeDns(['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => ['192.0.2.1']]);
 
     $detection = BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT, 'Accept-Language' => null, 'Accept' => null], ip: '192.0.2.1'));
 

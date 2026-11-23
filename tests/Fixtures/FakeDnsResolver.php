@@ -19,13 +19,13 @@ final class FakeDnsResolver implements DnsResolver {
         private readonly array $addresses = [],
     ) {}
 
-    public function hostnames(string $ip): ?array {
+    public function lookupHostnames(string $ip): ?array {
         $this->lookups++;
 
         return \array_key_exists($ip, $this->hostnames) ? $this->hostnames[$ip] : [];
     }
 
-    public function addresses(string $hostname): ?array {
+    public function lookupAddresses(string $hostname): ?array {
         $this->lookups++;
 
         return \array_key_exists($hostname, $this->addresses) ? $this->addresses[$hostname] : [];
