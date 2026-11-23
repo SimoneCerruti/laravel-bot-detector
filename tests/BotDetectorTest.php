@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-use SimoneCerruti\BotDetector\Contracts\DnsResolver;
 use SimoneCerruti\BotDetector\Enums\Verdict;
 use SimoneCerruti\BotDetector\Facades\BotDetector;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptLanguage;
 use SimoneCerruti\BotDetector\Tests\Fixtures\AlwaysMatchingSignal;
-use SimoneCerruti\BotDetector\Tests\Fixtures\FakeDnsResolver;
 
 it('computes the detection once per request', function (): void {
     $request = browserRequest(['Accept-Language' => null]);
@@ -190,21 +188,6 @@ it('does not classify a path removed from the probe paths', function (): void {
 
     expect(BotDetector::detect(browserRequest(path: '/wp-login.php'))->verdict)->toBe(Verdict::Human);
 });
-
-const GOOGLEBOT = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
-
-/**
- * Bind prepared DNS answers in place of the real resolver.
- *
- * @param  array<string, list<string>|null>  $hostnames
- * @param  array<string, list<string>|null>  $addresses
- */
-function bindFakeDns(array $hostnames = [], array $addresses = []): FakeDnsResolver {
-    $resolver = new FakeDnsResolver($hostnames, $addresses);
-    app()->instance(DnsResolver::class, $resolver);
-
-    return $resolver;
-}
 
 it('verifies a default good bot by reverse and forward DNS', function (string $user_agent, string $hostname): void {
     bindFakeDns(['192.0.2.1' => [$hostname]], [$hostname => ['192.0.2.1']]);
