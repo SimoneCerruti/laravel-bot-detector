@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use SimoneCerruti\BotDetector\Actions\Block;
+use SimoneCerruti\BotDetector\Reactions\Block;
 use SimoneCerruti\BotDetector\Signals\HeadlessChrome;
 use SimoneCerruti\BotDetector\Signals\MissingAccept;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptEncoding;
@@ -74,11 +74,11 @@ return [
     ],
 
     /*
-     * The actions the `bot-detector` middleware runs for each verdict, in order: the request is denied
-     * at the first action that denies. Add your own classes implementing
-     * SimoneCerruti\BotDetector\Contracts\BotAction. Human requests run no actions.
+     * The reactions the `bot-detector` middleware runs for each verdict, in order: the request is denied
+     * at the first reaction that denies. Add your own classes implementing
+     * SimoneCerruti\BotDetector\Contracts\Reaction. Human requests run no reactions.
      */
-    'actions' => [
+    'reactions' => [
         'good_bot' => [],
         'suspicious' => [],
         'automated' => [Block::class],

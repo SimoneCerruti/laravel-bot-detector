@@ -7,12 +7,12 @@ namespace SimoneCerruti\BotDetector\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use SimoneCerruti\BotDetector\BotDetector;
-use SimoneCerruti\BotDetector\Contracts\BotAction;
+use SimoneCerruti\BotDetector\Contracts\Reaction;
 use SimoneCerruti\BotDetector\Enums\Decision;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Runs the actions configured for the request's verdict, in order, and denies the request at the first denying action.
+ * Runs the reactions configured for the request's verdict, in order, and denies the request at the first denying reaction.
  *
  * @internal
  */
@@ -27,10 +27,10 @@ final readonly class DetectBots {
     public function handle(Request $request, Closure $next): Response {
         $detection = $this->detector->detect($request);
 
-        /** @var list<class-string<BotAction>> $actions */
-        $actions = config()->array('bot-detector.actions.'.$detection->verdict->value, []);
+        /** @var list<class-string<Reaction>> $reactions */
+        $reactions = config()->array('bot-detector.reactions.'.$detection->verdict->value, []);
 
-        $denied = array_any($actions, fn (string $action): bool => app($action)->decide($request, $detection) === Decision::Deny);
+        $denied = array_any($reactions, fn (string $reaction): bool => app($reaction)->decide($request, $detection) === Decision::Deny);
 
         if ($denied) {
             return response('', config()->integer('bot-detector.deny_status'));

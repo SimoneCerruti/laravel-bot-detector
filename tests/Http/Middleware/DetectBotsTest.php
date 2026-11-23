@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
-use SimoneCerruti\BotDetector\Tests\Fixtures\AllowingAction;
-use SimoneCerruti\BotDetector\Tests\Fixtures\DenyingAction;
+use SimoneCerruti\BotDetector\Tests\Fixtures\AllowingReaction;
+use SimoneCerruti\BotDetector\Tests\Fixtures\DenyingReaction;
 
 const CHROME = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
@@ -45,20 +45,20 @@ it('denies with the configured status', function (): void {
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertGone();
 });
 
-it('lets the request through when every custom action allows it', function (): void {
-    config(['bot-detector.actions.automated' => [AllowingAction::class]]);
+it('lets the request through when every custom reaction allows it', function (): void {
+    config(['bot-detector.reactions.automated' => [AllowingReaction::class]]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();
 });
 
-it('denies the request when a custom action denies it', function (): void {
-    config(['bot-detector.actions.suspicious' => [AllowingAction::class, DenyingAction::class]]);
+it('denies the request when a custom reaction denies it', function (): void {
+    config(['bot-detector.reactions.suspicious' => [AllowingReaction::class, DenyingReaction::class]]);
 
     $this->withHeaders(['User-Agent' => CHROME, 'Accept-Language' => ''])->get('protected')->assertForbidden();
 });
 
-it('runs no actions removed from config', function (): void {
-    config(['bot-detector.actions.automated' => []]);
+it('runs no reactions removed from config', function (): void {
+    config(['bot-detector.reactions.automated' => []]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();
 });

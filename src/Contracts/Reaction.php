@@ -9,8 +9,8 @@ use SimoneCerruti\BotDetector\Data\Detection;
 use SimoneCerruti\BotDetector\Enums\Decision;
 
 /**
- * What the `bot-detector` middleware does with a request, configured per verdict in `bot-detector.actions`.
+ * What the `bot-detector` middleware does with a request, configured per verdict in `bot-detector.reactions`.
  */
-interface BotAction {
+interface Reaction {
     public function decide(Request $request, Detection $detection): Decision;
 }
