@@ -10,6 +10,7 @@ use SimoneCerruti\BotDetector\Data\Detection;
 use SimoneCerruti\BotDetector\Data\RequestFingerprint;
 use SimoneCerruti\BotDetector\Enums\Verdict;
 use SimoneCerruti\BotDetector\Facades\BotDetector as BotDetectorFacade;
+use SimoneCerruti\BotDetector\Signals\HeadlessChrome;
 use SimoneCerruti\BotDetector\Signals\MissingAccept;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptEncoding;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptLanguage;
@@ -32,6 +33,7 @@ const PUBLIC_API = [
     MissingAcceptEncoding::class,
     MissingSecFetchSite::class,
     MissingSecChUa::class,
+    HeadlessChrome::class,
 ];
 
 arch()->preset()->php();
