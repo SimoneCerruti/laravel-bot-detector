@@ -7,4 +7,5 @@ namespace SimoneCerruti\BotDetector\Enums;
 enum Verdict: string {
     case Human = 'human';
     case Suspicious = 'suspicious';
+    case Automated = 'automated';
 }

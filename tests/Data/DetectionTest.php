@@ -7,7 +7,8 @@ use SimoneCerruti\BotDetector\Signals\MissingAcceptLanguage;
 
 it('tells whether the request looks like a bot', function (): void {
     expect(BotDetector::detect(browserRequest())->isBot())->toBeFalse()
-        ->and(BotDetector::detect(browserRequest(['Accept-Language' => null]))->isBot())->toBeTrue();
+        ->and(BotDetector::detect(browserRequest(['Accept-Language' => null]))->isBot())->toBeTrue()
+        ->and(BotDetector::detect(browserRequest(['Accept-Language' => null, 'Accept' => null]))->isBot())->toBeTrue();
 });
 
 it('serialises to an array', function (): void {
@@ -15,6 +16,10 @@ it('serialises to an array', function (): void {
         'verdict' => 'suspicious',
         'score' => 3,
         'signals' => [MissingAcceptLanguage::class => 3],
-        'fingerprint' => ['accept_language' => null],
+        'fingerprint' => [
+            'accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'accept_language' => null,
+            'accept_encoding' => 'gzip, deflate, br, zstd',
+        ],
     ]);
 });

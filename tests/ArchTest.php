@@ -10,6 +10,8 @@ use SimoneCerruti\BotDetector\Data\Detection;
 use SimoneCerruti\BotDetector\Data\RequestFingerprint;
 use SimoneCerruti\BotDetector\Enums\Verdict;
 use SimoneCerruti\BotDetector\Facades\BotDetector as BotDetectorFacade;
+use SimoneCerruti\BotDetector\Signals\MissingAccept;
+use SimoneCerruti\BotDetector\Signals\MissingAcceptEncoding;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptLanguage;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -24,6 +26,8 @@ const PUBLIC_API = [
     RequestFingerprint::class,
     Verdict::class,
     MissingAcceptLanguage::class,
+    MissingAccept::class,
+    MissingAcceptEncoding::class,
 ];
 
 arch()->preset()->php();
