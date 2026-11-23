@@ -10,13 +10,11 @@ use SimoneCerruti\BotDetector\Data\Detection;
 use SimoneCerruti\BotDetector\Data\RequestFingerprint;
 use SimoneCerruti\BotDetector\Enums\Verdict;
 
-final class BotDetector
-{
+final class BotDetector {
     private const string ATTRIBUTE = 'bot-detector.detection';
 
     /** Inspect the request, computing the detection once and reusing it for the rest of the request. */
-    public function detect(Request $request): Detection
-    {
+    public function detect(Request $request): Detection {
         $detection = $request->attributes->get(self::ATTRIBUTE);
 
         if ($detection instanceof Detection) {
@@ -29,8 +27,7 @@ final class BotDetector
         return $detection;
     }
 
-    private function inspect(RequestFingerprint $fingerprint): Detection
-    {
+    private function inspect(RequestFingerprint $fingerprint): Detection {
         /** @var array<class-string<Signal>, int> $weights */
         $weights = config()->array('bot-detector.signals');
 

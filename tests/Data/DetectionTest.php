@@ -15,6 +15,6 @@ it('serialises to an array', function (): void {
         'verdict' => 'suspicious',
         'score' => 3,
         'signals' => [MissingAcceptLanguage::class => 3],
-        'fingerprint' => ['acceptLanguage' => null],
+        'fingerprint' => ['accept_language' => null],
     ]);
 });

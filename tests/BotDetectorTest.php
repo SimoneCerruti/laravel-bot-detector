@@ -49,6 +49,6 @@ it('does not evaluate a signal removed from config', function (): void {
 });
 
 it('exposes what arrived in the fingerprint', function (): void {
-    expect(BotDetector::detect(browserRequest(['Accept-Language' => 'en-US']))->fingerprint->acceptLanguage)
+    expect(BotDetector::detect(browserRequest(['Accept-Language' => 'en-US']))->fingerprint->accept_language)
         ->toBe('en-US');
 });
