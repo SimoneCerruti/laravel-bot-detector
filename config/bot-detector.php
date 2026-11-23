@@ -55,4 +55,21 @@ return [
         ],
     ],
 
+    /*
+     * Clients whose User-Agent matches a pattern (a regex) are verified by DNS: the IP must point back to
+     * a hostname ending with one of the suffixes, and that hostname must resolve to the same IP.
+     * Verified gets GoodBot, a mismatch gets Automated, a DNS error gets Suspicious (and is retried).
+     * Confirmed hostnames are cached per IP for `cache_ttl` seconds in the default cache store.
+     */
+    'good_bots' => [
+        'cache_ttl' => 60 * 60 * 24,
+        'bots' => [
+            '/Googlebot/i' => ['.googlebot.com', '.google.com'],
+            '/bingbot/i' => ['.search.msn.com'],
+            '/Applebot/i' => ['.applebot.apple.com'],
+            '/DuckDuckBot/i' => ['.duckduckgo.com'],
+            '/YandexBot/i' => ['.yandex.ru', '.yandex.net', '.yandex.com'],
+        ],
+    ],
+
 ];

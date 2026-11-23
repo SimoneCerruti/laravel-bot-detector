@@ -6,6 +6,8 @@ namespace SimoneCerruti\BotDetector\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
 use SimoneCerruti\BotDetector\BotDetectorServiceProvider;
+use SimoneCerruti\BotDetector\Contracts\DnsResolver;
+use SimoneCerruti\BotDetector\Tests\Fixtures\FakeDnsResolver;
 use Spatie\LaravelData\LaravelDataServiceProvider;
 
 abstract class TestCase extends Orchestra {
@@ -14,5 +16,10 @@ abstract class TestCase extends Orchestra {
             LaravelDataServiceProvider::class,
             BotDetectorServiceProvider::class,
         ];
+    }
+
+    protected function defineEnvironment($app): void {
+        // No test touches the network: every IP has no DNS records unless a test binds its own answers.
+        $app->instance(DnsResolver::class, new FakeDnsResolver);
     }
 }

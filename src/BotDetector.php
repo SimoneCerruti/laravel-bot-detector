@@ -50,17 +50,27 @@ final class BotDetector {
         $probe_paths = config()->array('bot-detector.probe_paths.paths');
         $probed = config()->boolean('bot-detector.probe_paths.enabled') && Str::is($probe_paths, $fingerprint->path);
 
+        $suffixes = $this->findGoodBotSuffixes($fingerprint->user_agent);
+        $verified = $suffixes === null ? null : app(GoodBotVerifier::class)->verify($fingerprint->ip, $suffixes);
+
+        $verdict = match (true) {
+            $verified === true => Verdict::GoodBot,
+            $verified === false => Verdict::Automated,
+            // A DNS error on a good-bot claim must never block the real crawler.
+            $suffixes !== null => Verdict::Suspicious,
+            $claimed_as !== null, $probed => Verdict::Automated,
+            $score >= config()->integer('bot-detector.automated_at') => Verdict::Automated,
+            $score >= config()->integer('bot-detector.suspicious_at') => Verdict::Suspicious,
+            default => Verdict::Human,
+        };
+
         return new Detection(
-            verdict: match (true) {
-                $claimed_as !== null, $probed => Verdict::Automated,
-                $score >= config()->integer('bot-detector.automated_at') => Verdict::Automated,
-                $score >= config()->integer('bot-detector.suspicious_at') => Verdict::Suspicious,
-                default => Verdict::Human,
-            },
+            verdict: $verdict,
             score: $score,
             signals: $signals,
             claimed_as: $claimed_as,
             category: $category,
+            verified: $verified,
             fingerprint: $fingerprint,
         );
     }
@@ -98,5 +108,17 @@ final class BotDetector {
         }
 
         return [null, null];
+    }
+
+    /**
+     * The hostname suffixes of the configured good bot the User-Agent claims to be, or null for no claim.
+     *
+     * @return list<string>|null
+     */
+    private function findGoodBotSuffixes(?string $user_agent): ?array {
+        /** @var array<string, list<string>> $bots */
+        $bots = config()->array('bot-detector.good_bots.bots');
+
+        return Arr::first($bots, fn (array $suffixes, string $pattern): bool => Str::isMatch($pattern, $user_agent ?? ''));
     }
 }
