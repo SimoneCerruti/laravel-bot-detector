@@ -11,11 +11,23 @@ it('tells whether the request looks like a bot', function (): void {
         ->and(BotDetector::detect(browserRequest(['Accept-Language' => null, 'Accept' => null]))->isBot())->toBeTrue();
 });
 
+it('serialises what a self-declared bot claims to be', function (): void {
+    expect(BotDetector::detect(browserRequest([
+        'User-Agent' => 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+    ]))->toArray())->toMatchArray([
+        'verdict' => 'automated',
+        'claimed_as' => 'Googlebot',
+        'category' => 'Search bot',
+    ]);
+});
+
 it('serialises to an array', function (): void {
     expect(BotDetector::detect(browserRequest(['Accept-Language' => null]))->toArray())->toBe([
         'verdict' => 'suspicious',
         'score' => 3,
         'signals' => [MissingAcceptLanguage::class => 3],
+        'claimed_as' => null,
+        'category' => null,
         'fingerprint' => [
             'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
             'secure' => true,
