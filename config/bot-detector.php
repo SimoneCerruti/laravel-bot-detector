@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use SimoneCerruti\BotDetector\Signals\HeadlessChrome;
 use SimoneCerruti\BotDetector\Signals\MissingAccept;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptEncoding;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptLanguage;
@@ -16,6 +17,7 @@ return [
      * to disable it, or change a weight to tune it.
      */
     'signals' => [
+        HeadlessChrome::class => 5,
         MissingSecFetchSite::class => 3,
         MissingSecChUa::class => 3,
         MissingAcceptLanguage::class => 3,
