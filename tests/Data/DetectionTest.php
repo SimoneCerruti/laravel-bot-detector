@@ -36,6 +36,7 @@ it('serialises to an array', function (): void {
             'accept_encoding' => 'gzip, deflate, br, zstd',
             'sec_fetch_site' => 'none',
             'sec_ch_ua' => '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+            'path' => '/',
         ],
     ]);
 });

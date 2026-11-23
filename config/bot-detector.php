@@ -35,4 +35,24 @@ return [
      */
     'automated_at' => 5,
 
+    /*
+     * Requests to these paths are classified Automated when enabled: vulnerability scanners probe them on
+     * their first hit. Paths have no leading slash and `*` matches anything. Off by default because
+     * a legitimate app may serve one of them, such as WordPress under a sub-path.
+     */
+    'probe_paths' => [
+        'enabled' => false,
+        'paths' => [
+            '.env',
+            '.git/config',
+            'wp-login.php',
+            'xmlrpc.php',
+            'phpmyadmin',
+            'vendor/phpunit/*',
+            '.aws/credentials',
+            'server-status',
+            'actuator',
+        ],
+    ],
+
 ];

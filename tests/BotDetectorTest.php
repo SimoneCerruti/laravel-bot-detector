@@ -84,7 +84,7 @@ it('exposes what arrived in the fingerprint', function (): void {
         'Accept-Encoding' => 'gzip',
         'Sec-Fetch-Site' => 'same-origin',
         'Sec-CH-UA' => '"Chromium";v="131"',
-    ]))->fingerprint;
+    ], path: '/blog/post'))->fingerprint;
 
     expect($fingerprint->user_agent)->toBe('curl/8.5.0')
         ->and($fingerprint->secure)->toBeTrue()
@@ -92,7 +92,8 @@ it('exposes what arrived in the fingerprint', function (): void {
         ->and($fingerprint->accept_language)->toBe('en-US')
         ->and($fingerprint->accept_encoding)->toBe('gzip')
         ->and($fingerprint->sec_fetch_site)->toBe('same-origin')
-        ->and($fingerprint->sec_ch_ua)->toBe('"Chromium";v="131"');
+        ->and($fingerprint->sec_ch_ua)->toBe('"Chromium";v="131"')
+        ->and($fingerprint->path)->toBe('blog/post');
 });
 
 it('exposes a plain-HTTP request as not secure', function (): void {
@@ -147,4 +148,42 @@ it('still computes the score and signals of a self-declared bot', function (): v
     expect($detection->signals)->toBe([MissingAcceptLanguage::class => 3])
         ->and($detection->score)->toBe(3)
         ->and($detection->verdict)->toBe(Verdict::Automated);
+});
+
+it('does not classify probe paths by default', function (): void {
+    expect(BotDetector::detect(browserRequest(path: '/.env'))->verdict)->toBe(Verdict::Human);
+});
+
+it('classifies a request to a probe path as automated when enabled', function (string $path): void {
+    config(['bot-detector.probe_paths.enabled' => true]);
+
+    expect(BotDetector::detect(browserRequest(path: $path))->verdict)->toBe(Verdict::Automated);
+})->with([
+    '/.env',
+    '/.git/config',
+    '/wp-login.php',
+    '/xmlrpc.php',
+    '/phpmyadmin',
+    '/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php',
+    '/.aws/credentials',
+    '/server-status',
+    '/actuator',
+]);
+
+it('keeps a request to any other path human when probe paths are enabled', function (string $path): void {
+    config(['bot-detector.probe_paths.enabled' => true]);
+
+    expect(BotDetector::detect(browserRequest(path: $path))->verdict)->toBe(Verdict::Human);
+})->with(['/', '/blog/wp-login', '/vendor/phpunit', '/.env.example']);
+
+it('matches probe paths with wildcards', function (): void {
+    config(['bot-detector.probe_paths' => ['enabled' => true, 'paths' => ['wp-*']]]);
+
+    expect(BotDetector::detect(browserRequest(path: '/wp-admin/install.php'))->verdict)->toBe(Verdict::Automated);
+});
+
+it('does not classify a path removed from the probe paths', function (): void {
+    config(['bot-detector.probe_paths' => ['enabled' => true, 'paths' => ['.env']]]);
+
+    expect(BotDetector::detect(browserRequest(path: '/wp-login.php'))->verdict)->toBe(Verdict::Human);
 });

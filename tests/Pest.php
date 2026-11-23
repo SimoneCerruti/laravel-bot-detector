@@ -12,8 +12,8 @@ pest()->extend(TestCase::class)->in(__DIR__);
  *
  * @param  array<string, string|null>  $headers
  */
-function browserRequest(array $headers = [], bool $secure = true): Request {
-    $request = Request::create($secure ? 'https://localhost/' : 'http://localhost/');
+function browserRequest(array $headers = [], bool $secure = true, string $path = '/'): Request {
+    $request = Request::create(($secure ? 'https://localhost' : 'http://localhost').$path);
 
     foreach ([
         'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
