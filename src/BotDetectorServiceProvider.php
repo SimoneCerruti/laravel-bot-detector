@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace SimoneCerruti\BotDetector;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
+use SimoneCerruti\BotDetector\Data\Detection;
 
-class BotDetectorServiceProvider extends ServiceProvider
+final class BotDetectorServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
@@ -23,6 +25,11 @@ class BotDetectorServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Request::macro('botDetection', function (): Detection {
+            /** @var Request $this */
+            return app(BotDetector::class)->detect($this);
+        });
+
         if (! $this->app->runningInConsole()) {
             return;
         }

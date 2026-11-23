@@ -7,9 +7,11 @@ namespace SimoneCerruti\BotDetector\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
+ * @method static \SimoneCerruti\BotDetector\Data\Detection detect(\Illuminate\Http\Request $request)
+ *
  * @see \SimoneCerruti\BotDetector\BotDetector
  */
-class BotDetector extends Facade
+final class BotDetector extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
