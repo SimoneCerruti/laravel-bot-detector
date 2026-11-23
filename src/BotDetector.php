@@ -33,8 +33,8 @@ final class BotDetector {
 
         $signals = array_filter(
             $weights,
-            fn (int $weight, string $signal): bool => app($signal)->matches($fingerprint),
-            ARRAY_FILTER_USE_BOTH,
+            fn (string $signal): bool => app($signal)->matches($fingerprint),
+            ARRAY_FILTER_USE_KEY,
         );
 
         $score = array_sum($signals);
