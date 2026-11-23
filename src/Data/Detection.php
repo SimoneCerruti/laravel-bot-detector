@@ -8,8 +8,7 @@ use SimoneCerruti\BotDetector\Contracts\Signal;
 use SimoneCerruti\BotDetector\Enums\Verdict;
 use Spatie\LaravelData\Data;
 
-final class Detection extends Data
-{
+final class Detection extends Data {
     /**
      * @param  array<class-string<Signal>, int>  $signals  the matched signals and their weight
      */
@@ -20,8 +19,7 @@ final class Detection extends Data
         public readonly RequestFingerprint $fingerprint,
     ) {}
 
-    public function isBot(): bool
-    {
+    public function isBot(): bool {
         return $this->verdict !== Verdict::Human;
     }
 }

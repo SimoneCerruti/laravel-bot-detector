@@ -11,10 +11,8 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \SimoneCerruti\BotDetector\BotDetector
  */
-final class BotDetector extends Facade
-{
-    protected static function getFacadeAccessor(): string
-    {
+final class BotDetector extends Facade {
+    protected static function getFacadeAccessor(): string {
         return \SimoneCerruti\BotDetector\BotDetector::class;
     }
 }
