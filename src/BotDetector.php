@@ -44,31 +44,31 @@ final class BotDetector {
         );
 
         $score = array_sum($signals);
-        $claim = $this->classify($fingerprint->user_agent);
+        [$claimed_as, $category] = $this->classify($fingerprint->user_agent);
 
         return new Detection(
             verdict: match (true) {
-                $claim !== null => Verdict::Automated,
+                $claimed_as !== null => Verdict::Automated,
                 $score >= config()->integer('bot-detector.automated_at') => Verdict::Automated,
                 $score >= config()->integer('bot-detector.suspicious_at') => Verdict::Suspicious,
                 default => Verdict::Human,
             },
             score: $score,
             signals: $signals,
-            claimed_as: $claim[0] ?? null,
-            category: $claim[1] ?? null,
+            claimed_as: $claimed_as,
+            category: $category,
             fingerprint: $fingerprint,
         );
     }
 
     /**
-     * What a self-declared bot or HTTP library claims to be, and its bot category.
+     * What a self-declared bot or HTTP library claims to be, and its bot category: both null for any other client.
      *
-     * @return array{string, ?string}|null
+     * @return array{?string, ?string}
      */
-    private function classify(?string $user_agent): ?array {
+    private function classify(?string $user_agent): array {
         if ($user_agent === null || $user_agent === '') {
-            return null;
+            return [null, null];
         }
 
         $detector = new DeviceDetector($user_agent);
@@ -93,6 +93,6 @@ final class BotDetector {
             return [$token, null];
         }
 
-        return null;
+        return [null, null];
     }
 }
