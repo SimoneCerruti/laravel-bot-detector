@@ -30,7 +30,9 @@ final readonly class DetectBots {
         /** @var list<class-string<BotAction>> $actions */
         $actions = config()->array('bot-detector.actions.'.$detection->verdict->value, []);
 
-        if (array_any($actions, fn (string $action): bool => app($action)->decide($request, $detection) === Decision::Deny)) {
+        $denied = array_any($actions, fn (string $action): bool => app($action)->decide($request, $detection) === Decision::Deny);
+
+        if ($denied) {
             return response('', config()->integer('bot-detector.deny_status'));
         }
 
