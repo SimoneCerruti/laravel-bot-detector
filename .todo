@@ -1,0 +1,11 @@
+- [ ] `#[AllowBots]` attribute on controllers/actions to skip enforcement per action
+- [ ] Verdict cache per fingerprint (skip re-evaluating signals for a known client)
+- [ ] Tarpit action: delay then serve a minimal response (dangerous with php-fpm workers: each delayed request holds a worker)
+- [ ] Challenge: document how to build one (Turnstile, proof-of-work) as a host `ResponseAction` configured on `suspicious`
+- [ ] `RateSignal`: requests per minute per IP via `RateLimiter`
+- [ ] `HoneypotSignal`: hit on a trap route / hidden form field no human sees
+- [ ] Ban list: `bot_bans` table (ip or cidr, reason, expires_at), `bot-detector:ban` / `unban`, auto-ban after N automated verdicts in a window
+- [ ] Signal: `Sec-CH-UA` Chromium major version differs from the UA major version
+- [ ] Signal: `Sec-CH-UA-Platform` differs from the UA operating system
+- [ ] Signal: `Accept: */*` on an HTML navigation, or `Accept-Language: *`
+- [ ] Actions per bot category (e.g. block only AI crawlers), using the Matomo category exposed on `Detection`
