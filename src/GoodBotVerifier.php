@@ -32,7 +32,7 @@ final readonly class GoodBotVerifier {
             return false;
         }
 
-        $key = 'bot-detector.good-bots.'.$ip;
+        $key = 'bot-detector.good-bots:'.$ip;
 
         /** @var list<string>|null $hostnames */
         $hostnames = Cache::get($key);
