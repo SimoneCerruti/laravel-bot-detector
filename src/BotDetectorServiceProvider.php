@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace SimoneCerruti\BotDetector;
 
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use SimoneCerruti\BotDetector\Contracts\DnsResolver;
 use SimoneCerruti\BotDetector\Data\Detection;
+use SimoneCerruti\BotDetector\Http\Middleware\DetectBots;
 
 final class BotDetectorServiceProvider extends ServiceProvider {
     /**
@@ -28,6 +30,8 @@ final class BotDetectorServiceProvider extends ServiceProvider {
             /** @var Request $this */
             return app(BotDetector::class)->detect($this);
         });
+
+        $this->app->make(Router::class)->aliasMiddleware('bot-detector', DetectBots::class);
 
         if (! $this->app->runningInConsole()) {
             return;

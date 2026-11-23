@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Illuminate\Http\Request;
+use SimoneCerruti\BotDetector\Contracts\DnsResolver;
+use SimoneCerruti\BotDetector\Tests\Fixtures\FakeDnsResolver;
 use SimoneCerruti\BotDetector\Tests\TestCase;
 
 pest()->extend(TestCase::class)->in(__DIR__);
@@ -29,4 +31,19 @@ function browserRequest(array $headers = [], bool $secure = true, string $path =
     }
 
     return $request;
+}
+
+const GOOGLEBOT = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
+
+/**
+ * Bind prepared DNS answers in place of the real resolver.
+ *
+ * @param  array<string, list<string>|null>  $hostnames
+ * @param  array<string, list<string>|null>  $addresses
+ */
+function bindFakeDns(array $hostnames = [], array $addresses = []): FakeDnsResolver {
+    $resolver = new FakeDnsResolver($hostnames, $addresses);
+    app()->instance(DnsResolver::class, $resolver);
+
+    return $resolver;
 }

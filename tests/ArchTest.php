@@ -5,11 +5,14 @@ declare(strict_types=1);
 use Illuminate\Support\Str;
 use SimoneCerruti\BotDetector\BotDetector;
 use SimoneCerruti\BotDetector\BotDetectorServiceProvider;
+use SimoneCerruti\BotDetector\Contracts\Reaction;
 use SimoneCerruti\BotDetector\Contracts\Signal;
 use SimoneCerruti\BotDetector\Data\Detection;
 use SimoneCerruti\BotDetector\Data\RequestFingerprint;
+use SimoneCerruti\BotDetector\Enums\Decision;
 use SimoneCerruti\BotDetector\Enums\Verdict;
 use SimoneCerruti\BotDetector\Facades\BotDetector as BotDetectorFacade;
+use SimoneCerruti\BotDetector\Reactions\Block;
 use SimoneCerruti\BotDetector\Signals\HeadlessChrome;
 use SimoneCerruti\BotDetector\Signals\MissingAccept;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptEncoding;
@@ -34,6 +37,9 @@ const PUBLIC_API = [
     MissingSecFetchSite::class,
     MissingSecChUa::class,
     HeadlessChrome::class,
+    Reaction::class,
+    Decision::class,
+    Block::class,
 ];
 
 arch()->preset()->php();
@@ -57,6 +63,11 @@ arch('the signals implement the signal contract')
     ->expect('SimoneCerruti\BotDetector\Signals')
     ->classes()
     ->toImplement(Signal::class);
+
+arch('the reactions implement the reaction contract')
+    ->expect('SimoneCerruti\BotDetector\Reactions')
+    ->classes()
+    ->toImplement(Reaction::class);
 
 it('marks as internal every class outside the public API', function (string $class): void {
     $doc_comment = (string) new ReflectionClass($class)->getDocComment();
