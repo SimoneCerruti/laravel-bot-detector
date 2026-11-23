@@ -53,17 +53,19 @@ final class BotDetector {
         $suffixes = $this->findGoodBotSuffixes($fingerprint->user_agent);
         $verified = $suffixes === null ? null : app(GoodBotVerifier::class)->verify($fingerprint->ip, $suffixes);
 
+        $verdict = match (true) {
+            $verified === true => Verdict::GoodBot,
+            $verified === false => Verdict::Automated,
+            // A DNS error on a good-bot claim must never block the real crawler.
+            $suffixes !== null => Verdict::Suspicious,
+            $claimed_as !== null, $probed => Verdict::Automated,
+            $score >= config()->integer('bot-detector.automated_at') => Verdict::Automated,
+            $score >= config()->integer('bot-detector.suspicious_at') => Verdict::Suspicious,
+            default => Verdict::Human,
+        };
+
         return new Detection(
-            verdict: match (true) {
-                $verified === true => Verdict::GoodBot,
-                $verified === false => Verdict::Automated,
-                // A DNS error on a good-bot claim must never block the real crawler.
-                $suffixes !== null => Verdict::Suspicious,
-                $claimed_as !== null, $probed => Verdict::Automated,
-                $score >= config()->integer('bot-detector.automated_at') => Verdict::Automated,
-                $score >= config()->integer('bot-detector.suspicious_at') => Verdict::Suspicious,
-                default => Verdict::Human,
-            },
+            verdict: $verdict,
             score: $score,
             signals: $signals,
             claimed_as: $claimed_as,
