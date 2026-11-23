@@ -46,9 +46,13 @@ final class BotDetector {
         $score = array_sum($signals);
         [$claimed_as, $category] = $this->classify($fingerprint->user_agent);
 
+        /** @var list<string> $probe_paths */
+        $probe_paths = config()->array('bot-detector.probe_paths.paths');
+        $probed = config()->boolean('bot-detector.probe_paths.enabled') && Str::is($probe_paths, $fingerprint->path);
+
         return new Detection(
             verdict: match (true) {
-                $claimed_as !== null => Verdict::Automated,
+                $claimed_as !== null, $probed => Verdict::Automated,
                 $score >= config()->integer('bot-detector.automated_at') => Verdict::Automated,
                 $score >= config()->integer('bot-detector.suspicious_at') => Verdict::Suspicious,
                 default => Verdict::Human,

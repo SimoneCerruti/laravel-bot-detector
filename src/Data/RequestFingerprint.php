@@ -20,6 +20,7 @@ final class RequestFingerprint extends Data {
         public readonly ?string $accept_encoding,
         public readonly ?string $sec_fetch_site,
         public readonly ?string $sec_ch_ua,
+        public readonly string $path,
     ) {}
 
     public static function fromRequest(Request $request): self {
@@ -31,6 +32,7 @@ final class RequestFingerprint extends Data {
             accept_encoding: $request->headers->get('Accept-Encoding'),
             sec_fetch_site: $request->headers->get('Sec-Fetch-Site'),
             sec_ch_ua: $request->headers->get('Sec-CH-UA'),
+            path: $request->path(),
         );
     }
 }
