@@ -7,15 +7,11 @@ namespace SimoneCerruti\BotDetector;
 use DeviceDetector\DeviceDetector;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
-use SimoneCerruti\BotDetector\Contracts\DnsResolver;
 use SimoneCerruti\BotDetector\Contracts\Signal;
 use SimoneCerruti\BotDetector\Data\Detection;
 use SimoneCerruti\BotDetector\Data\RequestFingerprint;
 use SimoneCerruti\BotDetector\Enums\Verdict;
-
-use function Safe\inet_pton;
 
 final class BotDetector {
     private const string ATTRIBUTE = 'bot-detector.detection';
@@ -55,7 +51,7 @@ final class BotDetector {
         $probed = config()->boolean('bot-detector.probe_paths.enabled') && Str::is($probe_paths, $fingerprint->path);
 
         $suffixes = $this->findGoodBotSuffixes($fingerprint->user_agent);
-        $verified = $suffixes === null ? null : $this->verify($fingerprint->ip, $suffixes);
+        $verified = $suffixes === null ? null : app(GoodBotVerifier::class)->verify($fingerprint->ip, $suffixes);
 
         return new Detection(
             verdict: match (true) {
@@ -122,72 +118,5 @@ final class BotDetector {
         $bots = config()->array('bot-detector.good_bots.bots');
 
         return Arr::first($bots, fn (array $suffixes, string $pattern): bool => Str::isMatch($pattern, $user_agent ?? ''));
-    }
-
-    /**
-     * Whether the IP belongs to the good bot: null when DNS failed.
-     *
-     * @param  list<string>  $suffixes
-     */
-    private function verify(?string $ip, array $suffixes): ?bool {
-        if ($ip === null) {
-            return false;
-        }
-
-        $key = 'bot-detector.good-bots.'.$ip;
-
-        /** @var list<string>|null $hostnames */
-        $hostnames = Cache::get($key);
-
-        if ($hostnames === null) {
-            $hostnames = $this->resolveConfirmedHostnames($ip);
-
-            if ($hostnames === null) {
-                return null;
-            }
-
-            Cache::put($key, $hostnames, config()->integer('bot-detector.good_bots.cache_ttl'));
-        }
-
-        return array_any($hostnames, fn (string $hostname): bool => Str::endsWith($hostname, $suffixes));
-    }
-
-    /**
-     * The good-bot hostnames the IP points back to that resolve to the same IP, or null when DNS failed.
-     * Only hostnames under a configured suffix are resolved, so a spoofer's own DNS cannot fail the lookup on purpose.
-     *
-     * @return list<string>|null
-     */
-    private function resolveConfirmedHostnames(string $ip): ?array {
-        /** @var list<string> $suffixes */
-        $suffixes = Arr::flatten(config()->array('bot-detector.good_bots.bots'));
-        $resolver = app(DnsResolver::class);
-        $hostnames = $resolver->lookupHostnames($ip);
-
-        if ($hostnames === null) {
-            return null;
-        }
-
-        $confirmed = [];
-
-        foreach ($hostnames as $hostname) {
-            $hostname = Str::lower($hostname);
-
-            if (! Str::endsWith($hostname, $suffixes)) {
-                continue;
-            }
-
-            $addresses = $resolver->lookupAddresses($hostname);
-
-            if ($addresses === null) {
-                return null;
-            }
-
-            if (\in_array(inet_pton($ip), array_map(inet_pton(...), $addresses), true)) {
-                $confirmed[] = $hostname;
-            }
-        }
-
-        return $confirmed;
     }
 }
