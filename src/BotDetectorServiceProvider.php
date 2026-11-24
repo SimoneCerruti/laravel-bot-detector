@@ -7,6 +7,7 @@ namespace SimoneCerruti\BotDetector;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use SimoneCerruti\BotDetector\Console\Commands\VerifyCommand;
 use SimoneCerruti\BotDetector\Contracts\DnsResolver;
 use SimoneCerruti\BotDetector\Data\Detection;
 use SimoneCerruti\BotDetector\Http\Middleware\DetectBots;
@@ -36,6 +37,8 @@ final class BotDetectorServiceProvider extends ServiceProvider {
         if (! $this->app->runningInConsole()) {
             return;
         }
+
+        $this->commands([VerifyCommand::class]);
 
         $this->publishes([
             __DIR__.'/../config/bot-detector.php' => config_path('bot-detector.php'),
