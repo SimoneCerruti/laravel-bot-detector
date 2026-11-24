@@ -164,11 +164,22 @@ A detection carries:
 | `signals` | the matched signals, as signal class => weight |
 | `claimed_as` | what a self-declared bot or HTTP library says it is, such as `Googlebot` or `curl`; `null` otherwise |
 | `category` | the bot category, such as `Search bot` or `Crawler`, when known; `null` otherwise |
-| `verified` | `true` or `false` when a good-bot claim was checked by DNS; `null` when there was no claim or DNS failed |
+| `reason` | a `SimoneCerruti\BotDetector\Enums\Reason` saying why the request got its verdict (see below) |
 | `fingerprint` | what the detection looked at: `user_agent`, `ip`, `secure`, `accept`, `accept_language`, `accept_encoding`, `sec_fetch_site`, `sec_ch_ua`, `path`, `method`, `route` |
 | `isBot()` | `true` for every verdict except `human` |
 | `isGoodBot()` | `true` for a verified good bot |
 | `toArray()` | the whole detection as an array |
+
+The reason is always set, one per verdict rule, checked in this order:
+
+| Reason | Verdict | When |
+| --- | --- | --- |
+| `VerifiedGoodBot` | `good_bot` | a good-bot claim confirmed by reverse and forward DNS |
+| `SpoofedGoodBot` | `automated` | a good-bot claim whose IP fails DNS verification |
+| `UnverifiableGoodBot` | `suspicious` | a good-bot claim that DNS could not check because of an error |
+| `SelfDeclared` | `automated` | a self-declared bot or HTTP library |
+| `ProbePath` | `automated` | a request to a probe path, with probe paths enabled |
+| `Score` | `human`, `suspicious` or `automated` | the score of the matched signals |
 
 ## Reactions
 
@@ -197,7 +208,7 @@ The built-in reactions:
 
 | Reaction | What it does |
 | --- | --- |
-| `Log` | Writes a `Bot detected` entry to your log, then lets the request through. Configure the channel and level under `log`. |
+| `Log` | Writes a `Bot detected` entry to your log, with the verdict and its reason, then lets the request through. Configure the channel and level under `log`. |
 | `Throttle` | Allows each IP + User-Agent `throttle.max_requests` requests every `throttle.per_seconds` seconds (30 a minute by default), counted in your default cache store. Beyond that it denies with an empty `429` and a `Retry-After` header. |
 | `Block` | Denies with an empty response of status `deny_status` (`403` by default). |
 
@@ -383,7 +394,7 @@ To understand why a visitor got its verdict, replay it from the terminal with th
 php artisan bot-detector:verify 66.249.66.1 "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 ```
 
-The command runs the full detection over HTTPS, real DNS included, and prints the verdict, score, what the client claims to be, its category, whether DNS verified it, and the matched signals with their weights. It runs no reactions, writes no log and dispatches no event.
+The command runs the full detection over HTTPS, real DNS included, and prints the verdict, score, what the client claims to be, its category, the reason for the verdict, and the matched signals with their weights. It runs no reactions, writes no log and dispatches no event.
 
 The replayed request carries only the User-Agent, so the missing-header signals match. Add the headers you know with `--header`, repeated as needed:
 

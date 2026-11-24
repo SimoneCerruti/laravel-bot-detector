@@ -45,6 +45,7 @@ Protect a Laravel app from bots through the package's public API, rolled out so 
 ### 5. Keep dry run on until tuned
 
 - Leave `dry_run.enabled` true for the first deploy. Tell the user to collect about a week of `Bot detected` logs, adjust `signals` weights, `suspicious_at`, `automated_at` and the excepts, then set `BOT_DETECTOR_DRY_RUN=false` in that environment's `.env` (or `dry_run.enabled` to false).
+- Each `Bot detected` entry and `Detection::$reason` (`Enums\Reason`) say which rule decided the verdict: tune weights and thresholds only for `score` entries.
 - Explain a single visitor with `php artisan bot-detector:verify {ip} "{ua}" --header="Name: value"`.
 - Done when enforcement is either still in dry run, or the user confirmed tuning is finished.
 
@@ -94,4 +95,4 @@ Add a signal with its weight:
 - Ship with `dry_run.enabled` true; switching enforcement on is the user's call after tuning.
 - Welcome search engines through `good_bots` (User-Agent regex => DNS hostname suffixes), which verifies the IP; a User-Agent check alone lets anyone pretend.
 - Store the hashed or dropped IP: `Detection::toArray()` and `fingerprint->ip` hold the raw address, while the `Log` reaction already writes an HMAC unless `log.raw_ip` is on.
-- Use only the public API: the facade, the request macro, `Detection`, `RequestFingerprint`, `BotDetected`, the `Reaction`, `RespondsToDeny` and `Signal` contracts, the built-in reactions and signals, the enums `Verdict` and `Decision`.
+- Use only the public API: the facade, the request macro, `Detection`, `RequestFingerprint`, `BotDetected`, the `Reaction`, `RespondsToDeny` and `Signal` contracts, the built-in reactions and signals, the enums `Verdict`, `Reason` and `Decision`.

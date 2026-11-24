@@ -29,6 +29,7 @@ final class Log implements Reaction {
             'score' => $detection->score,
             'signals' => $detection->signals,
             'verdict' => $detection->verdict->value,
+            'reason' => $detection->reason->value,
             'method' => $fingerprint->method,
             'path' => $fingerprint->path,
             'route' => $fingerprint->route,

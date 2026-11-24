@@ -49,11 +49,7 @@ final class VerifyCommand extends Command {
         $this->components->twoColumnDetail('Score', (string) $detection->score);
         $this->components->twoColumnDetail('Claimed as', $detection->claimed_as ?? '-');
         $this->components->twoColumnDetail('Category', $detection->category ?? '-');
-        $this->components->twoColumnDetail('Verified', match ($detection->verified) {
-            true => 'yes',
-            false => 'no',
-            null => '-',
-        });
+        $this->components->twoColumnDetail('Reason', $detection->reason->value);
         $this->components->twoColumnDetail('Signals', $detection->signals === [] ? 'none' : '');
 
         foreach ($detection->signals as $signal => $weight) {

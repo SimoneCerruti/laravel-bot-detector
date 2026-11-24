@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use DeviceDetector\DeviceDetector;
 use Illuminate\Support\Facades\Cache;
+use SimoneCerruti\BotDetector\Enums\Reason;
 use SimoneCerruti\BotDetector\Enums\Verdict;
 use SimoneCerruti\BotDetector\Facades\BotDetector;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptLanguage;
@@ -43,6 +44,16 @@ it('becomes automated exactly at the automated threshold', function (int $thresh
     'below the score' => [2, Verdict::Automated],
     'equal to the score' => [3, Verdict::Automated],
     'above the score' => [4, Verdict::Suspicious],
+]);
+
+it('explains a verdict decided by the score', function (array $headers, Verdict $verdict): void {
+    expect(BotDetector::detect(browserRequest($headers)))
+        ->verdict->toBe($verdict)
+        ->reason->toBe(Reason::Score);
+})->with([
+    'human' => [[], Verdict::Human],
+    'suspicious' => [['Accept-Language' => null], Verdict::Suspicious],
+    'automated' => [['Accept-Language' => null, 'Accept' => null], Verdict::Automated],
 ]);
 
 it('keeps a request missing only Accept-Encoding human', function (): void {
@@ -106,9 +117,13 @@ it('exposes a plain-HTTP request as not secure', function (): void {
 });
 
 it('classifies self-declared bots and HTTP libraries as automated', function (string $user_agent, string $claimed_as, ?string $category): void {
+    // Googlebot would otherwise be a good-bot claim, verified by DNS.
+    config(['bot-detector.good_bots.bots' => []]);
+
     $detection = BotDetector::detect(browserRequest(['User-Agent' => $user_agent]));
 
     expect($detection->verdict)->toBe(Verdict::Automated)
+        ->and($detection->reason)->toBe(Reason::SelfDeclared)
         ->and($detection->claimed_as)->toBe($claimed_as)
         ->and($detection->category)->toBe($category);
 })->with([
@@ -162,7 +177,9 @@ it('does not classify probe paths by default', function (): void {
 it('classifies a request to a probe path as automated when enabled', function (string $path): void {
     config(['bot-detector.probe_paths.enabled' => true]);
 
-    expect(BotDetector::detect(browserRequest(path: $path))->verdict)->toBe(Verdict::Automated);
+    expect(BotDetector::detect(browserRequest(path: $path)))
+        ->verdict->toBe(Verdict::Automated)
+        ->reason->toBe(Reason::ProbePath);
 })->with([
     '/.env',
     '/.git/config',
@@ -199,7 +216,7 @@ it('verifies a default good bot by reverse and forward DNS', function (string $u
     $detection = BotDetector::detect(browserRequest(['User-Agent' => $user_agent], ip: '192.0.2.1'));
 
     expect($detection->verdict)->toBe(Verdict::GoodBot)
-        ->and($detection->verified)->toBeTrue();
+        ->and($detection->reason)->toBe(Reason::VerifiedGoodBot);
 })->with([
     'Googlebot' => [GOOGLEBOT, 'crawl-66-249-66-1.googlebot.com'],
     'Google special crawler' => [GOOGLEBOT, 'rate-limited-proxy-66-249-90-77.google.com'],
@@ -232,7 +249,7 @@ it('classifies a spoofed good bot as automated', function (array $hostnames, arr
     $detection = BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
 
     expect($detection->verdict)->toBe(Verdict::Automated)
-        ->and($detection->verified)->toBeFalse()
+        ->and($detection->reason)->toBe(Reason::SpoofedGoodBot)
         ->and($detection->isGoodBot())->toBeFalse();
 })->with([
     'no reverse DNS' => [[], []],
@@ -249,11 +266,30 @@ it('classifies a good bot as suspicious when DNS fails', function (array $hostna
     $detection = BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
 
     expect($detection->verdict)->toBe(Verdict::Suspicious)
-        ->and($detection->verified)->toBeNull();
+        ->and($detection->reason)->toBe(Reason::UnverifiableGoodBot);
 })->with([
     'reverse DNS error' => [['192.0.2.1' => null], []],
     'forward DNS error' => [['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => null]],
 ]);
+
+it('gives a good-bot claim precedence over a self-declared bot and a probe path', function (array $hostnames, array $addresses, Verdict $verdict, Reason $reason): void {
+    config(['bot-detector.probe_paths.enabled' => true]);
+    bindFakeDns($hostnames, $addresses);
+
+    expect(BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], path: '/.env', ip: '192.0.2.1')))
+        ->verdict->toBe($verdict)
+        ->reason->toBe($reason);
+})->with([
+    'verified' => [['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => ['192.0.2.1']], Verdict::GoodBot, Reason::VerifiedGoodBot],
+    'spoofed' => [[], [], Verdict::Automated, Reason::SpoofedGoodBot],
+    'DNS error' => [['192.0.2.1' => null], [], Verdict::Suspicious, Reason::UnverifiableGoodBot],
+]);
+
+it('gives a self-declared bot precedence over a probe path', function (): void {
+    config(['bot-detector.probe_paths.enabled' => true]);
+
+    expect(BotDetector::detect(browserRequest(['User-Agent' => 'curl/8.5.0'], path: '/.env'))->reason)->toBe(Reason::SelfDeclared);
+});
 
 it('does not resolve a reverse DNS hostname outside every good-bot suffix', function (): void {
     // A spoofer controls the DNS of its own domain, so failing that lookup must not soften the verdict.
@@ -265,8 +301,9 @@ it('does not resolve a reverse DNS hostname outside every good-bot suffix', func
 it('does not look up DNS for a client that claims no good bot', function (string $user_agent): void {
     $resolver = bindFakeDns();
 
-    expect(BotDetector::detect(browserRequest(['User-Agent' => $user_agent]))->verified)->toBeNull()
-        ->and($resolver->lookups)->toBe(0);
+    BotDetector::detect(browserRequest(['User-Agent' => $user_agent]));
+
+    expect($resolver->lookups)->toBe(0);
 })->with(['Chrome' => [browserRequest()->userAgent()], 'curl' => ['curl/8.5.0']]);
 
 it('caches the verification per IP', function (): void {
@@ -343,7 +380,7 @@ it('does not verify a good bot removed from config', function (): void {
     $detection = BotDetector::detect(browserRequest(['User-Agent' => GOOGLEBOT], ip: '192.0.2.1'));
 
     expect($detection->verdict)->toBe(Verdict::Automated)
-        ->and($detection->verified)->toBeNull()
+        ->and($detection->reason)->toBe(Reason::SelfDeclared)
         ->and($resolver->lookups)->toBe(0);
 });
 
