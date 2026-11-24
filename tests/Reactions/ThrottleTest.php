@@ -13,14 +13,14 @@ beforeEach(function (): void {
 });
 
 it('lets requests through up to the limit', function (): void {
-    config(['bot-detector.throttle.limit' => 2]);
+    config(['bot-detector.throttle.max_requests' => 2]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();
 });
 
 it('denies with an empty 429 and Retry-After over the limit', function (): void {
-    config(['bot-detector.throttle.limit' => 2, 'bot-detector.throttle.window' => 120]);
+    config(['bot-detector.throttle.max_requests' => 2, 'bot-detector.throttle.per_seconds' => 120]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected');
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected');
@@ -42,7 +42,7 @@ it('allows 30 requests per minute by default', function (): void {
 });
 
 it('counts each IP and User-Agent separately', function (): void {
-    config(['bot-detector.throttle.limit' => 1]);
+    config(['bot-detector.throttle.max_requests' => 1]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->withServerVariables(['REMOTE_ADDR' => '192.0.2.1'])->get('protected')->assertOk();
 
@@ -52,7 +52,7 @@ it('counts each IP and User-Agent separately', function (): void {
 });
 
 it('lets a throttled request through in dry run', function (): void {
-    config(['bot-detector.dry_run' => true, 'bot-detector.throttle.limit' => 1]);
+    config(['bot-detector.dry_run' => true, 'bot-detector.throttle.max_requests' => 1]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();

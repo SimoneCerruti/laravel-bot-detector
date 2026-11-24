@@ -112,12 +112,13 @@ return [
     ],
 
     /*
-     * How many requests the Throttle reaction allows per IP + User-Agent in a window of `window` seconds,
-     * in the default cache store, before denying with a 429 and `Retry-After`.
+     * The Throttle reaction allows each IP + User-Agent at most `max_requests` requests every `per_seconds`
+     * seconds (30 per minute by default), counted in the default cache store; beyond that it denies with
+     * a 429 and a `Retry-After` header saying how many seconds to wait.
      */
     'throttle' => [
-        'limit' => 30,
-        'window' => 60,
+        'max_requests' => 30,
+        'per_seconds' => 60,
     ],
 
     /*

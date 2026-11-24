@@ -124,7 +124,7 @@ it('logs a suspicious request by default and lets it through', function (): void
 });
 
 it('throttles a suspicious request by default', function (): void {
-    config(['bot-detector.dry_run' => false, 'bot-detector.throttle.limit' => 1]);
+    config(['bot-detector.dry_run' => false, 'bot-detector.throttle.max_requests' => 1]);
 
     $this->withHeaders(['User-Agent' => CHROME, 'Accept-Language' => ''])->get('protected')->assertOk();
     $this->withHeaders(['User-Agent' => CHROME, 'Accept-Language' => ''])->get('protected')->assertTooManyRequests();

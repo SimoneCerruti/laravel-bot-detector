@@ -13,16 +13,16 @@ use SimoneCerruti\BotDetector\Enums\Decision;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Allows `bot-detector.throttle.limit` requests per `bot-detector.throttle.window` seconds for each IP + User-Agent,
+ * Allows `bot-detector.throttle.max_requests` requests per `bot-detector.throttle.per_seconds` seconds for each IP + User-Agent,
  * then denies with an empty 429 and `Retry-After`.
  */
 final class Throttle implements Reaction, RespondsToDeny {
     public function decide(Request $request, Detection $detection): Decision {
         $allowed = RateLimiter::attempt(
             $this->findKey($detection),
-            config()->integer('bot-detector.throttle.limit'),
+            config()->integer('bot-detector.throttle.max_requests'),
             fn (): bool => true,
-            config()->integer('bot-detector.throttle.window'),
+            config()->integer('bot-detector.throttle.per_seconds'),
         );
 
         return $allowed ? Decision::Allow : Decision::Deny;
