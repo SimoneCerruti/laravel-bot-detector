@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use SimoneCerruti\BotDetector\Reactions\Log;
 use SimoneCerruti\BotDetector\Tests\Fixtures\AllowingReaction;
 use SimoneCerruti\BotDetector\Tests\Fixtures\DenyingReaction;
+use SimoneCerruti\BotDetector\Tests\Fixtures\RespondingReaction;
 
 const CHROME = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
@@ -68,6 +69,28 @@ it('denies the request when a custom reaction denies it', function (): void {
     $this->withHeaders(['User-Agent' => CHROME, 'Accept-Language' => ''])->get('protected')->assertForbidden();
 });
 
+it('denies with the response of a reaction that provides its own', function (): void {
+    config(['bot-detector.dry_run' => false, 'bot-detector.reactions.automated' => [RespondingReaction::class]]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')
+        ->assertUnauthorized()
+        ->assertContent('challenge');
+});
+
+it('denies with the response of the first denying reaction', function (): void {
+    config(['bot-detector.dry_run' => false, 'bot-detector.reactions.automated' => [DenyingReaction::class, RespondingReaction::class]]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')
+        ->assertForbidden()
+        ->assertContent('');
+});
+
+it('lets a custom deny response through in dry run', function (): void {
+    config(['bot-detector.reactions.automated' => [RespondingReaction::class]]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();
+});
+
 it('runs no reactions removed from config', function (): void {
     config(['bot-detector.reactions.automated' => []]);
 
@@ -98,6 +121,13 @@ it('logs a suspicious request by default and lets it through', function (): void
 
     expect(findLogRecords())->toHaveCount(1)
         ->and(findLogRecords()[0]->context['verdict'])->toBe('suspicious');
+});
+
+it('throttles a suspicious request by default', function (): void {
+    config(['bot-detector.dry_run' => false, 'bot-detector.throttle.limit' => 1]);
+
+    $this->withHeaders(['User-Agent' => CHROME, 'Accept-Language' => ''])->get('protected')->assertOk();
+    $this->withHeaders(['User-Agent' => CHROME, 'Accept-Language' => ''])->get('protected')->assertTooManyRequests();
 });
 
 it('logs neither a human request nor a verified good bot by default', function (): void {
