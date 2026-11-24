@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Str;
 use SimoneCerruti\BotDetector\BotDetector;
 use SimoneCerruti\BotDetector\BotDetectorServiceProvider;
+use SimoneCerruti\BotDetector\Console\Commands\VerifyCommand;
 use SimoneCerruti\BotDetector\Contracts\Reaction;
 use SimoneCerruti\BotDetector\Contracts\RespondsToDeny;
 use SimoneCerruti\BotDetector\Contracts\Signal;
@@ -48,6 +49,7 @@ const PUBLIC_API = [
     RespondsToDeny::class,
     Throttle::class,
     BotDetected::class,
+    VerifyCommand::class,
 ];
 
 arch()->preset()->php();
