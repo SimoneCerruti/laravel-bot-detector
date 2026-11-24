@@ -28,6 +28,7 @@ it('logs the detection with the IP hashed by the app key', function (): void {
             'signals' => [MissingAcceptEncoding::class => 1],
             'verdict' => 'automated',
             'method' => 'POST',
+            'path' => 'contact',
             'route' => 'contact',
         ]);
 });
