@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
@@ -281,4 +282,63 @@ it('still dispatches BotDetected outside dry run when dispatch_events is off', f
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected');
 
     Event::assertDispatchedTimes(BotDetected::class, 1);
+});
+
+it('blocks a real good bot behind an untrusted proxy, which hides its IP', function (): void {
+    config(['bot-detector.dry_run.enabled' => false]);
+    bindFakeDns(['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => ['192.0.2.1']]);
+
+    $this->withHeaders(['User-Agent' => GOOGLEBOT, 'X-Forwarded-For' => '192.0.2.1'])
+        ->withServerVariables(['REMOTE_ADDR' => '10.0.0.1'])
+        ->get('protected')
+        ->assertForbidden();
+});
+
+it('sees the client IP and HTTPS through a trusted proxy', function (): void {
+    TrustProxies::at('*');
+    config(['bot-detector.dry_run.enabled' => false]);
+    bindFakeDns(['192.0.2.1' => ['crawl-1.googlebot.com']], ['crawl-1.googlebot.com' => ['192.0.2.1']]);
+    Route::get('secure', fn (Request $request): array => [$request->botDetection()->fingerprint->ip, $request->botDetection()->fingerprint->secure])->middleware('bot-detector');
+
+    $this->withHeaders(['User-Agent' => GOOGLEBOT, 'X-Forwarded-For' => '192.0.2.1', 'X-Forwarded-Proto' => 'https'])
+        ->withServerVariables(['REMOTE_ADDR' => '10.0.0.1'])
+        ->get('http://localhost/secure')
+        ->assertOk()
+        ->assertExactJson(['192.0.2.1', true]);
+});
+
+it('consults the policy for human requests too, with no configured reactions', function (): void {
+    config(['bot-detector.dry_run.enabled' => false]);
+    BotDetector::usePolicy(fn (Request $request, Detection $detection, array $reactions): array => $reactions === [] ? [DenyingReaction::class] : $reactions);
+
+    $this->withHeader('User-Agent', CHROME)->get('protected')->assertForbidden();
+});
+
+it('lets a denial returned by the policy through in dry run and on log-only routes', function (): void {
+    BotDetector::usePolicy(fn (): array => [DenyingReaction::class]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();
+
+    config(['bot-detector.dry_run.enabled' => false]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('log-only')->assertOk();
+});
+
+it('replaces the previous policy when another one is registered', function (): void {
+    config(['bot-detector.dry_run.enabled' => false]);
+    BotDetector::usePolicy(fn (): array => [DenyingReaction::class]);
+    BotDetector::usePolicy(fn (): array => [AllowingReaction::class]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();
+});
+
+it('does not dispatch BotDetected for an except path or ip', function (): void {
+    Event::fake([BotDetected::class]);
+    config(['bot-detector.except_ips' => ['203.0.113.10']]);
+    Route::get('up', fn (): string => 'content')->middleware('bot-detector');
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('up');
+    $this->withHeader('User-Agent', 'curl/8.5.0')->withServerVariables(['REMOTE_ADDR' => '203.0.113.10'])->get('protected');
+
+    Event::assertNotDispatched(BotDetected::class);
 });
