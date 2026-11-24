@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use SimoneCerruti\BotDetector\Reactions\Throttle;
 
 beforeEach(function (): void {
+    // Retry-After counts whole seconds: a slow runner crossing a second boundary would make it 59.
+    $this->freezeTime();
     Route::get('protected', fn (): string => 'content')->middleware('bot-detector');
     config(['bot-detector.dry_run' => false, 'bot-detector.reactions.automated' => [Throttle::class]]);
 });
