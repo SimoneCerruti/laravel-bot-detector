@@ -9,12 +9,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use SimoneCerruti\BotDetector\BotDetector;
 use SimoneCerruti\BotDetector\Contracts\Reaction;
+use SimoneCerruti\BotDetector\Contracts\RespondsToDeny;
 use SimoneCerruti\BotDetector\Enums\Decision;
 use Symfony\Component\HttpFoundation\IpUtils;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Runs all the reactions configured for the request's verdict, in order, and denies the request when any of them denies,
+ * Runs all the reactions configured for the request's verdict, in order, and denies the request with the first denying reaction's response when any of them denies,
  * unless `bot-detector.dry_run` is on. Requests matching `bot-detector.except_paths` or `bot-detector.except_ips` skip detection entirely.
  *
  * @internal
@@ -39,16 +40,23 @@ final readonly class DetectBots {
 
         $detection = $this->detector->detect($request);
 
-        /** @var list<class-string<Reaction>> $reactions */
-        $reactions = config()->array('bot-detector.reactions.'.$detection->verdict->value, []);
+        /** @var list<class-string<Reaction>> $classes */
+        $classes = config()->array('bot-detector.reactions.'.$detection->verdict->value, []);
+        $reactions = array_map(fn (string $class): Reaction => app($class), $classes);
 
         // Every reaction runs, so one after a denying reaction, such as Log after Block, still sees the request.
-        $decisions = array_map(fn (string $reaction): Decision => app($reaction)->decide($request, $detection), $reactions);
+        $decisions = array_map(fn (Reaction $reaction): Decision => $reaction->decide($request, $detection), $reactions);
 
-        if (\in_array(Decision::Deny, $decisions, true) && ! config()->boolean('bot-detector.dry_run')) {
-            return response('', config()->integer('bot-detector.deny_status'));
+        $denying = array_search(Decision::Deny, $decisions, true);
+
+        if ($denying === false || config()->boolean('bot-detector.dry_run')) {
+            return $next($request);
         }
 
-        return $next($request);
+        if ($reactions[$denying] instanceof RespondsToDeny) {
+            return $reactions[$denying]->denyResponse($request, $detection);
+        }
+
+        return response('', config()->integer('bot-detector.deny_status'));
     }
 }

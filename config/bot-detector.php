@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use SimoneCerruti\BotDetector\Reactions\Block;
 use SimoneCerruti\BotDetector\Reactions\Log;
+use SimoneCerruti\BotDetector\Reactions\Throttle;
 use SimoneCerruti\BotDetector\Signals\HeadlessChrome;
 use SimoneCerruti\BotDetector\Signals\MissingAccept;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptEncoding;
@@ -95,7 +96,7 @@ return [
      */
     'reactions' => [
         'good_bot' => [],
-        'suspicious' => [Log::class],
+        'suspicious' => [Log::class, Throttle::class],
         'automated' => [Log::class, Block::class],
     ],
 
@@ -111,13 +112,24 @@ return [
     ],
 
     /*
+     * The Throttle reaction allows each IP + User-Agent at most `max_requests` requests every `per_seconds`
+     * seconds (30 per minute by default), counted in the default cache store; beyond that it denies with
+     * a 429 and a `Retry-After` header saying how many seconds to wait.
+     */
+    'throttle' => [
+        'max_requests' => 30,
+        'per_seconds' => 60,
+    ],
+
+    /*
      * In dry run the reactions still run, but a denied request is let through: nothing is blocked
      * until you have tuned the thresholds and turned this off.
      */
     'dry_run' => true,
 
     /*
-     * The status of the empty response a denied request gets.
+     * The status of the empty response a denied request gets, unless the first denying reaction
+     * implements SimoneCerruti\BotDetector\Contracts\RespondsToDeny and provides its own.
      */
     'deny_status' => 403,
 

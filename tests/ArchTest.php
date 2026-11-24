@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use SimoneCerruti\BotDetector\BotDetector;
 use SimoneCerruti\BotDetector\BotDetectorServiceProvider;
 use SimoneCerruti\BotDetector\Contracts\Reaction;
+use SimoneCerruti\BotDetector\Contracts\RespondsToDeny;
 use SimoneCerruti\BotDetector\Contracts\Signal;
 use SimoneCerruti\BotDetector\Data\Detection;
 use SimoneCerruti\BotDetector\Data\RequestFingerprint;
@@ -14,6 +15,7 @@ use SimoneCerruti\BotDetector\Enums\Verdict;
 use SimoneCerruti\BotDetector\Facades\BotDetector as BotDetectorFacade;
 use SimoneCerruti\BotDetector\Reactions\Block;
 use SimoneCerruti\BotDetector\Reactions\Log;
+use SimoneCerruti\BotDetector\Reactions\Throttle;
 use SimoneCerruti\BotDetector\Signals\HeadlessChrome;
 use SimoneCerruti\BotDetector\Signals\MissingAccept;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptEncoding;
@@ -42,6 +44,8 @@ const PUBLIC_API = [
     Decision::class,
     Block::class,
     Log::class,
+    RespondsToDeny::class,
+    Throttle::class,
 ];
 
 arch()->preset()->php();
