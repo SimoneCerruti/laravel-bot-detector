@@ -90,6 +90,14 @@ return [
     ],
 
     /*
+     * Matomo parses its User-Agent regexes from YAML on every request unless they are cached. They are cached
+     * forever, under keys that include Matomo's version, in this cache store (null for the app default).
+     */
+    'device_detector' => [
+        'cache_store' => 'file',
+    ],
+
+    /*
      * The reactions the `bot-detector` middleware runs for each verdict, all of them and in order: the request
      * is denied when any reaction denies. Add your own classes implementing
      * SimoneCerruti\BotDetector\Contracts\Reaction. Human requests run no reactions.
