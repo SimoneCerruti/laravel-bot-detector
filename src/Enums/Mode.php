@@ -11,4 +11,13 @@ namespace SimoneCerruti\BotDetector\Enums;
  */
 enum Mode: string {
     case LogOnly = 'log-only';
+
+    /**
+     * Whether a denied request is let through on a route using this mode.
+     */
+    public function shouldLetThrough(): bool {
+        return match ($this) {
+            self::LogOnly => true,
+        };
+    }
 }

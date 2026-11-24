@@ -54,7 +54,7 @@ final readonly class DetectBots {
         $denying = array_search(Decision::Deny, $decisions, true);
 
         $lets_through = $denying === false
-            || $route_mode === Mode::LogOnly
+            || $route_mode?->shouldLetThrough() === true
             || config()->boolean('bot-detector.dry_run');
 
         if ($lets_through) {
