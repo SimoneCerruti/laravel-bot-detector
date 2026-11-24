@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use SimoneCerruti\BotDetector\Data\Detection;
+use SimoneCerruti\BotDetector\Facades\BotDetector;
 use SimoneCerruti\BotDetector\Reactions\Log;
 use SimoneCerruti\BotDetector\Tests\Fixtures\AllowingReaction;
 use SimoneCerruti\BotDetector\Tests\Fixtures\DenyingReaction;
@@ -202,3 +205,34 @@ it('rejects an unknown middleware mode', function (): void {
 
     $this->withoutExceptionHandling()->withHeader('User-Agent', 'curl/8.5.0')->get('unknown-mode');
 })->throws(ValueError::class);
+
+it('runs the reactions returned by the policy instead of the configured ones', function (): void {
+    config(['bot-detector.dry_run' => false]);
+    BotDetector::usePolicy(fn (): array => [AllowingReaction::class]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();
+
+    expect(findLogRecords())->toBeEmpty();
+});
+
+it('passes the request, the detection and the configured reactions to the policy', function (): void {
+    config(['bot-detector.dry_run' => false]);
+    Route::get('api/orders', fn (): string => 'content')->middleware('bot-detector');
+    BotDetector::usePolicy(fn (Request $request, Detection $detection, array $reactions): array => $request->is('api/*') && $detection->claimed_as === 'curl'
+        ? [Log::class]
+        : $reactions);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('api/orders')->assertOk();
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertForbidden();
+
+    expect(findLogRecords())->toHaveCount(2);
+});
+
+it('keeps the configured behaviour when the policy returns the given reactions', function (): void {
+    config(['bot-detector.dry_run' => false]);
+    BotDetector::usePolicy(fn (Request $request, Detection $detection, array $reactions): array => $reactions);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertForbidden();
+
+    expect(findLogRecords())->toHaveCount(1);
+});

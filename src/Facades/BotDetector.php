@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static \SimoneCerruti\BotDetector\Data\Detection detect(\Illuminate\Http\Request $request)
+ * @method static void usePolicy(\Closure $policy)
  *
  * @see \SimoneCerruti\BotDetector\BotDetector
  */
