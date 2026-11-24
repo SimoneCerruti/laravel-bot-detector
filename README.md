@@ -420,30 +420,30 @@ IP addresses are personal data in many jurisdictions. What the package stores:
 
 ## Configuration reference
 
-All options live in `config/bot-detector.php`; the published file documents each one.
+All options live in `config/bot-detector.php`; the published file documents each one. Settings that differ per environment or are sensitive are also read from the `.env` variable in the `Env` column; the others are app behaviour and stay in the config file.
 
-| Key | Default | Effect |
-| --- | --- | --- |
-| `except_paths` | `up`, `robots.txt`, `sitemap*.xml`, `llms.txt` | paths the middleware skips entirely |
-| `except_ips` | `[]` | IPs or ranges the middleware skips entirely |
-| `signals` | the six built-in signals | signal class => weight added to the score |
-| `suspicious_at` | `3` | score from which a request is `suspicious` |
-| `automated_at` | `5` | score from which a request is `automated` |
-| `probe_paths.enabled` | `false` | classify requests to probe paths as `automated` |
-| `probe_paths.paths` | `.env`, `wp-login.php`, `phpmyadmin`, ... | the probe paths, `*` as wildcard |
-| `good_bots.bots` | Googlebot, Bingbot, Applebot, DuckDuckBot, YandexBot | User-Agent regex => allowed hostname suffixes |
-| `good_bots.cache_ttl` | `86400` | seconds a DNS confirmation stays cached |
-| `good_bots.dns_timeout` | `2` | seconds each DNS query waits before it counts as a DNS error |
-| `device_detector.cache_store` | `file` | cache store holding the User-Agent rules that recognise bots (`null` for the app default) |
-| `reactions` | see [Reactions](#reactions) | verdict => reactions to run |
-| `log.channel` | `null` (app default) | log channel of the `Log` reaction |
-| `log.level` | `info` | log level of the `Log` reaction |
-| `log.raw_ip` | `false` | log the IP instead of its HMAC |
-| `throttle.max_requests` | `30` | requests allowed per window by `Throttle` |
-| `throttle.per_seconds` | `60` | length of the `Throttle` window |
-| `dry_run.enabled` | `true` | run reactions but never deny |
-| `dry_run.dispatch_events` | `true` | dispatch `BotDetected` during dry run |
-| `deny_status` | `403` | status of the empty response a denied request gets |
+| Key | Env | Default | Effect |
+| --- | --- | --- | --- |
+| `except_paths` |  | `up`, `robots.txt`, `sitemap*.xml`, `llms.txt` | paths the middleware skips entirely |
+| `except_ips` | `BOT_DETECTOR_EXCEPT_IPS` (comma-separated) | `[]` | IPs or ranges the middleware skips entirely |
+| `signals` |  | the six built-in signals | signal class => weight added to the score |
+| `suspicious_at` |  | `3` | score from which a request is `suspicious` |
+| `automated_at` |  | `5` | score from which a request is `automated` |
+| `probe_paths.enabled` | `BOT_DETECTOR_PROBE_PATHS` | `false` | classify requests to probe paths as `automated` |
+| `probe_paths.paths` |  | `.env`, `wp-login.php`, `phpmyadmin`, ... | the probe paths, `*` as wildcard |
+| `good_bots.bots` |  | Googlebot, Bingbot, Applebot, DuckDuckBot, YandexBot | User-Agent regex => allowed hostname suffixes |
+| `good_bots.cache_ttl` | `BOT_DETECTOR_GOOD_BOTS_CACHE_TTL` | `86400` | seconds a DNS confirmation stays cached |
+| `good_bots.dns_timeout` | `BOT_DETECTOR_DNS_TIMEOUT` | `2` | seconds each DNS query waits before it counts as a DNS error |
+| `device_detector.cache_store` | `BOT_DETECTOR_CACHE_STORE` | `file` | cache store holding the User-Agent rules that recognise bots (`null` for the app default) |
+| `reactions` |  | see [Reactions](#reactions) | verdict => reactions to run |
+| `log.channel` | `BOT_DETECTOR_LOG_CHANNEL` | `null` (app default) | log channel of the `Log` reaction |
+| `log.level` | `BOT_DETECTOR_LOG_LEVEL` | `info` | log level of the `Log` reaction |
+| `log.raw_ip` | `BOT_DETECTOR_LOG_RAW_IP` | `false` | log the IP instead of its HMAC |
+| `throttle.max_requests` | `BOT_DETECTOR_THROTTLE_MAX_REQUESTS` | `30` | requests allowed per window by `Throttle` |
+| `throttle.per_seconds` | `BOT_DETECTOR_THROTTLE_PER_SECONDS` | `60` | length of the `Throttle` window |
+| `dry_run.enabled` | `BOT_DETECTOR_DRY_RUN` | `true` | run reactions but never deny |
+| `dry_run.dispatch_events` | `BOT_DETECTOR_DRY_RUN_DISPATCH_EVENTS` | `true` | dispatch `BotDetected` during dry run |
+| `deny_status` |  | `403` | status of the empty response a denied request gets |
 
 ## Changelog
 
