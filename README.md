@@ -429,11 +429,11 @@ All options live in `config/bot-detector.php`; the published file documents each
 | `signals` |  | the six built-in signals | signal class => weight added to the score |
 | `suspicious_at` |  | `3` | score from which a request is `suspicious` |
 | `automated_at` |  | `5` | score from which a request is `automated` |
-| `probe_paths.enabled` | `BOT_DETECTOR_PROBE_PATHS` | `false` | classify requests to probe paths as `automated` |
+| `probe_paths.enabled` | `BOT_DETECTOR_PROBE_PATHS_ENABLED` | `false` | classify requests to probe paths as `automated` |
 | `probe_paths.paths` |  | `.env`, `wp-login.php`, `phpmyadmin`, ... | the probe paths, `*` as wildcard |
 | `good_bots.bots` |  | Googlebot, Bingbot, Applebot, DuckDuckBot, YandexBot | User-Agent regex => allowed hostname suffixes |
 | `good_bots.cache_ttl` | `BOT_DETECTOR_GOOD_BOTS_CACHE_TTL` | `86400` | seconds a DNS confirmation stays cached |
-| `good_bots.dns_timeout` | `BOT_DETECTOR_DNS_TIMEOUT` | `2` | seconds each DNS query waits before it counts as a DNS error |
+| `good_bots.dns_timeout` | `BOT_DETECTOR_GOOD_BOTS_DNS_TIMEOUT` | `2` | seconds each DNS query waits before it counts as a DNS error |
 | `device_detector.cache_store` | `BOT_DETECTOR_CACHE_STORE` | `file` | cache store holding the User-Agent rules that recognise bots (`null` for the app default) |
 | `reactions` |  | see [Reactions](#reactions) | verdict => reactions to run |
 | `log.channel` | `BOT_DETECTOR_LOG_CHANNEL` | `null` (app default) | log channel of the `Log` reaction |

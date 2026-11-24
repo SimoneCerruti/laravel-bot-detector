@@ -61,7 +61,7 @@ return [
      * a legitimate app may serve one of them, such as WordPress under a sub-path.
      */
     'probe_paths' => [
-        'enabled' => (bool) env('BOT_DETECTOR_PROBE_PATHS', false),
+        'enabled' => (bool) env('BOT_DETECTOR_PROBE_PATHS_ENABLED', false),
         'paths' => [
             '.env',
             '.git/config',
@@ -84,7 +84,7 @@ return [
      */
     'good_bots' => [
         'cache_ttl' => (int) env('BOT_DETECTOR_GOOD_BOTS_CACHE_TTL', 60 * 60 * 24),
-        'dns_timeout' => (float) env('BOT_DETECTOR_DNS_TIMEOUT', 2),
+        'dns_timeout' => (float) env('BOT_DETECTOR_GOOD_BOTS_DNS_TIMEOUT', 2),
         'bots' => [
             '/Googlebot/i' => ['.googlebot.com', '.google.com'],
             '/bingbot/i' => ['.search.msn.com'],

@@ -36,9 +36,9 @@ it('reads a setting from its environment variable', function (string $variable, 
     'throttle.max_requests' => ['BOT_DETECTOR_THROTTLE_MAX_REQUESTS', '100', 'throttle.max_requests', 100],
     'throttle.per_seconds' => ['BOT_DETECTOR_THROTTLE_PER_SECONDS', '300', 'throttle.per_seconds', 300],
     'good_bots.cache_ttl' => ['BOT_DETECTOR_GOOD_BOTS_CACHE_TTL', '3600', 'good_bots.cache_ttl', 3600],
-    'good_bots.dns_timeout' => ['BOT_DETECTOR_DNS_TIMEOUT', '0.5', 'good_bots.dns_timeout', 0.5],
+    'good_bots.dns_timeout' => ['BOT_DETECTOR_GOOD_BOTS_DNS_TIMEOUT', '0.5', 'good_bots.dns_timeout', 0.5],
     'device_detector.cache_store' => ['BOT_DETECTOR_CACHE_STORE', 'redis', 'device_detector.cache_store', 'redis'],
-    'probe_paths.enabled' => ['BOT_DETECTOR_PROBE_PATHS', 'true', 'probe_paths.enabled', true],
+    'probe_paths.enabled' => ['BOT_DETECTOR_PROBE_PATHS_ENABLED', 'true', 'probe_paths.enabled', true],
 ]);
 
 it('parses a comma-separated IP list, trimming spaces and dropping empty items', function (): void {
