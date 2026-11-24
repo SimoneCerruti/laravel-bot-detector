@@ -13,7 +13,15 @@ beforeEach(function (): void {
     Route::get('unprotected', fn (): string => 'content');
 });
 
-it('blocks an automated request with an empty 403', function (): void {
+it('lets a denied request through in dry run by default', function (): void {
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')
+        ->assertOk()
+        ->assertContent('content');
+});
+
+it('blocks an automated request with an empty 403 when dry run is off', function (): void {
+    config(['bot-detector.dry_run' => false]);
+
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')
         ->assertForbidden()
         ->assertContent('');
@@ -40,7 +48,7 @@ it('is not applied to routes without the middleware', function (): void {
 });
 
 it('denies with the configured status', function (): void {
-    config(['bot-detector.deny_status' => 410]);
+    config(['bot-detector.dry_run' => false, 'bot-detector.deny_status' => 410]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertGone();
 });
@@ -52,7 +60,7 @@ it('lets the request through when every custom reaction allows it', function ():
 });
 
 it('denies the request when a custom reaction denies it', function (): void {
-    config(['bot-detector.reactions.suspicious' => [AllowingReaction::class, DenyingReaction::class]]);
+    config(['bot-detector.dry_run' => false, 'bot-detector.reactions.suspicious' => [AllowingReaction::class, DenyingReaction::class]]);
 
     $this->withHeaders(['User-Agent' => CHROME, 'Accept-Language' => ''])->get('protected')->assertForbidden();
 });

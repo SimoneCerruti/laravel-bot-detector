@@ -85,6 +85,12 @@ return [
     ],
 
     /*
+     * In dry run the reactions still run, but a denied request is let through: nothing is blocked
+     * until you have tuned the thresholds and turned this off.
+     */
+    'dry_run' => true,
+
+    /*
      * The status of the empty response a denied request gets.
      */
     'deny_status' => 403,
