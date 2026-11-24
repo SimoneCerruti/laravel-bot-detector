@@ -31,7 +31,7 @@ it('lets a denied request through in dry run by default', function (): void {
 });
 
 it('blocks an automated request with an empty 403 when dry run is off', function (): void {
-    config(['bot-detector.dry_run' => false]);
+    config(['bot-detector.dry_run.enabled' => false]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')
         ->assertForbidden()
@@ -59,7 +59,7 @@ it('is not applied to routes without the middleware', function (): void {
 });
 
 it('denies with the configured status', function (): void {
-    config(['bot-detector.dry_run' => false, 'bot-detector.deny_status' => 410]);
+    config(['bot-detector.dry_run.enabled' => false, 'bot-detector.deny_status' => 410]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertGone();
 });
@@ -71,13 +71,13 @@ it('lets the request through when every custom reaction allows it', function ():
 });
 
 it('denies the request when a custom reaction denies it', function (): void {
-    config(['bot-detector.dry_run' => false, 'bot-detector.reactions.suspicious' => [AllowingReaction::class, DenyingReaction::class]]);
+    config(['bot-detector.dry_run.enabled' => false, 'bot-detector.reactions.suspicious' => [AllowingReaction::class, DenyingReaction::class]]);
 
     $this->withHeaders(['User-Agent' => CHROME, 'Accept-Language' => ''])->get('protected')->assertForbidden();
 });
 
 it('denies with the response of a reaction that provides its own', function (): void {
-    config(['bot-detector.dry_run' => false, 'bot-detector.reactions.automated' => [RespondingReaction::class]]);
+    config(['bot-detector.dry_run.enabled' => false, 'bot-detector.reactions.automated' => [RespondingReaction::class]]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')
         ->assertUnauthorized()
@@ -85,7 +85,7 @@ it('denies with the response of a reaction that provides its own', function (): 
 });
 
 it('denies with the response of the first denying reaction', function (): void {
-    config(['bot-detector.dry_run' => false, 'bot-detector.reactions.automated' => [DenyingReaction::class, RespondingReaction::class]]);
+    config(['bot-detector.dry_run.enabled' => false, 'bot-detector.reactions.automated' => [DenyingReaction::class, RespondingReaction::class]]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')
         ->assertForbidden()
@@ -105,7 +105,7 @@ it('runs no reactions removed from config', function (): void {
 });
 
 it('runs the reactions after a denying one, so Log after Block still logs', function (): void {
-    config(['bot-detector.dry_run' => false, 'bot-detector.reactions.automated' => [DenyingReaction::class, Log::class]]);
+    config(['bot-detector.dry_run.enabled' => false, 'bot-detector.reactions.automated' => [DenyingReaction::class, Log::class]]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertForbidden();
 
@@ -113,7 +113,7 @@ it('runs the reactions after a denying one, so Log after Block still logs', func
 });
 
 it('logs and blocks an automated request by default', function (): void {
-    config(['bot-detector.dry_run' => false]);
+    config(['bot-detector.dry_run.enabled' => false]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertForbidden();
 
@@ -122,7 +122,7 @@ it('logs and blocks an automated request by default', function (): void {
 });
 
 it('logs a suspicious request by default and lets it through', function (): void {
-    config(['bot-detector.dry_run' => false]);
+    config(['bot-detector.dry_run.enabled' => false]);
 
     $this->withHeaders(['User-Agent' => CHROME, 'Accept-Language' => ''])->get('protected')->assertOk();
 
@@ -131,7 +131,7 @@ it('logs a suspicious request by default and lets it through', function (): void
 });
 
 it('throttles a suspicious request by default', function (): void {
-    config(['bot-detector.dry_run' => false, 'bot-detector.throttle.max_requests' => 1]);
+    config(['bot-detector.dry_run.enabled' => false, 'bot-detector.throttle.max_requests' => 1]);
 
     $this->withHeaders(['User-Agent' => CHROME, 'Accept-Language' => ''])->get('protected')->assertOk();
     $this->withHeaders(['User-Agent' => CHROME, 'Accept-Language' => ''])->get('protected')->assertTooManyRequests();
@@ -147,7 +147,7 @@ it('logs neither a human request nor a verified good bot by default', function (
 });
 
 it('skips detection entirely for the default except paths', function (): void {
-    config(['bot-detector.dry_run' => false]);
+    config(['bot-detector.dry_run.enabled' => false]);
     Route::get('up', fn (): string => 'content')->middleware('bot-detector');
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('up')->assertOk();
@@ -156,14 +156,14 @@ it('skips detection entirely for the default except paths', function (): void {
 });
 
 it('skips except paths matching a wildcard', function (): void {
-    config(['bot-detector.dry_run' => false]);
+    config(['bot-detector.dry_run.enabled' => false]);
     Route::get('sitemap-posts.xml', fn (): string => 'content')->middleware('bot-detector');
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('sitemap-posts.xml')->assertOk();
 });
 
 it('skips a custom except path and still enforces the others', function (): void {
-    config(['bot-detector.dry_run' => false, 'bot-detector.except_paths' => ['protected']]);
+    config(['bot-detector.dry_run.enabled' => false, 'bot-detector.except_paths' => ['protected']]);
     Route::get('up', fn (): string => 'content')->middleware('bot-detector');
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();
@@ -171,7 +171,7 @@ it('skips a custom except path and still enforces the others', function (): void
 });
 
 it('skips detection entirely for an except ip', function (): void {
-    config(['bot-detector.dry_run' => false, 'bot-detector.except_ips' => ['192.0.2.1']]);
+    config(['bot-detector.dry_run.enabled' => false, 'bot-detector.except_ips' => ['192.0.2.1']]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->withServerVariables(['REMOTE_ADDR' => '192.0.2.1'])->get('protected')->assertOk();
 
@@ -179,14 +179,14 @@ it('skips detection entirely for an except ip', function (): void {
 });
 
 it('skips an ip inside an except CIDR range and still enforces the others', function (): void {
-    config(['bot-detector.dry_run' => false, 'bot-detector.except_ips' => ['10.0.0.0/8']]);
+    config(['bot-detector.dry_run.enabled' => false, 'bot-detector.except_ips' => ['10.0.0.0/8']]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->withServerVariables(['REMOTE_ADDR' => '10.1.2.3'])->get('protected')->assertOk();
     $this->withHeader('User-Agent', 'curl/8.5.0')->withServerVariables(['REMOTE_ADDR' => '192.0.2.1'])->get('protected')->assertForbidden();
 });
 
 it('never enforces a denial on a log-only route', function (): void {
-    config(['bot-detector.dry_run' => false]);
+    config(['bot-detector.dry_run.enabled' => false]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertForbidden();
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('log-only')
@@ -195,7 +195,7 @@ it('never enforces a denial on a log-only route', function (): void {
 });
 
 it('still runs the reactions on a log-only route', function (): void {
-    config(['bot-detector.dry_run' => false]);
+    config(['bot-detector.dry_run.enabled' => false]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('log-only')->assertOk();
 
@@ -210,7 +210,7 @@ it('rejects an unknown middleware mode', function (): void {
 })->throws(ValueError::class);
 
 it('runs the reactions returned by the policy instead of the configured ones', function (): void {
-    config(['bot-detector.dry_run' => false]);
+    config(['bot-detector.dry_run.enabled' => false]);
     BotDetector::usePolicy(fn (): array => [AllowingReaction::class]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();
@@ -219,7 +219,7 @@ it('runs the reactions returned by the policy instead of the configured ones', f
 });
 
 it('passes the request, the detection and the configured reactions to the policy', function (): void {
-    config(['bot-detector.dry_run' => false]);
+    config(['bot-detector.dry_run.enabled' => false]);
     Route::get('api/orders', fn (): string => 'content')->middleware('bot-detector');
     BotDetector::usePolicy(fn (Request $request, Detection $detection, array $reactions): array => $request->is('api/*') && $detection->claimed_as === 'curl'
         ? [Log::class]
@@ -232,7 +232,7 @@ it('passes the request, the detection and the configured reactions to the policy
 });
 
 it('keeps the configured behaviour when the policy returns the given reactions', function (): void {
-    config(['bot-detector.dry_run' => false]);
+    config(['bot-detector.dry_run.enabled' => false]);
     BotDetector::usePolicy(fn (Request $request, Detection $detection, array $reactions): array => $reactions);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertForbidden();
@@ -260,25 +260,25 @@ it('does not dispatch BotDetected for a human request', function (): void {
 
 it('tells BotDetected whether dry run is on', function (bool $dry_run): void {
     Event::fake([BotDetected::class]);
-    config(['bot-detector.dry_run' => $dry_run]);
+    config(['bot-detector.dry_run.enabled' => $dry_run]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected');
 
     Event::assertDispatched(BotDetected::class, fn (BotDetected $event): bool => $event->dry_run === $dry_run);
 })->with([true, false]);
 
-it('silences BotDetected in dry run when dispatch_in_dry_run is off', function (): void {
+it('silences BotDetected in dry run when dispatch_events is off', function (): void {
     Event::fake([BotDetected::class]);
-    config(['bot-detector.events.dispatch_in_dry_run' => false]);
+    config(['bot-detector.dry_run.dispatch_events' => false]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected');
 
     Event::assertNotDispatched(BotDetected::class);
 });
 
-it('still dispatches BotDetected outside dry run when dispatch_in_dry_run is off', function (): void {
+it('still dispatches BotDetected outside dry run when dispatch_events is off', function (): void {
     Event::fake([BotDetected::class]);
-    config(['bot-detector.dry_run' => false, 'bot-detector.events.dispatch_in_dry_run' => false]);
+    config(['bot-detector.dry_run.enabled' => false, 'bot-detector.dry_run.dispatch_events' => false]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected');
 

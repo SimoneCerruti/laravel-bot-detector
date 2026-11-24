@@ -123,17 +123,14 @@ return [
 
     /*
      * In dry run the reactions still run, but a denied request is let through: nothing is blocked
-     * until you have tuned the thresholds and turned this off.
+     * until you have tuned the thresholds and turned `enabled` off. The `bot-detector` middleware
+     * dispatches SimoneCerruti\BotDetector\Events\BotDetected for every non-human verdict, carrying
+     * the Detection, the Request and the dry run flag: turn off `dispatch_events` to silence your
+     * listeners until dry run is off.
      */
-    'dry_run' => true,
-
-    /*
-     * The `bot-detector` middleware dispatches SimoneCerruti\BotDetector\Events\BotDetected for every
-     * non-human verdict, carrying the Detection, the Request and the dry run flag. Turn off
-     * `dispatch_in_dry_run` to silence your listeners until dry run is off.
-     */
-    'events' => [
-        'dispatch_in_dry_run' => true,
+    'dry_run' => [
+        'enabled' => true,
+        'dispatch_events' => true,
     ],
 
     /*
