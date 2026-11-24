@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\IpUtils;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Runs all the reactions configured for the request's verdict, in order, and denies the request with the first denying reaction's response when any of them denies,
+ * Runs all the reactions configured for the request's verdict (or returned by the `BotDetector::usePolicy()` closure), in order, and denies the request with the first denying reaction's response when any of them denies,
  * unless `bot-detector.dry_run` is on or the route uses `bot-detector:log-only`. Requests matching `bot-detector.except_paths` or `bot-detector.except_ips` skip detection entirely.
  *
  * @internal
@@ -44,9 +44,7 @@ final readonly class DetectBots {
 
         $detection = $this->detector->detect($request);
 
-        /** @var list<class-string<Reaction>> $classes */
-        $classes = config()->array('bot-detector.reactions.'.$detection->verdict->value, []);
-        $reactions = array_map(fn (string $class): Reaction => app($class), $classes);
+        $reactions = array_map(fn (string $class): Reaction => app($class), $this->detector->resolveReactions($request, $detection));
 
         // Every reaction runs, so one after a denying reaction, such as Log after Block, still sees the request.
         $decisions = array_map(fn (Reaction $reaction): Decision => $reaction->decide($request, $detection), $reactions);

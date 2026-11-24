@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace SimoneCerruti\BotDetector;
 
+use Closure;
 use DeviceDetector\DeviceDetector;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use SimoneCerruti\BotDetector\Contracts\Reaction;
 use SimoneCerruti\BotDetector\Contracts\Signal;
 use SimoneCerruti\BotDetector\Data\Detection;
 use SimoneCerruti\BotDetector\Data\RequestFingerprint;
@@ -18,6 +20,30 @@ final class BotDetector {
 
     /** Bot tokens for the clients Matomo leaves without a device, such as link previews it sees as a mobile app (WhatsApp). */
     private const string FALLBACK_BOT_PATTERN = '/bot|crawler|spider|crawling|slurp|facebookexternalhit|embedly|preview|fetch|whatsapp|telegram|petalbot|bytespider|semrush|ahrefs|mj12bot/i';
+
+    /** @var (Closure(Request, Detection, list<class-string<Reaction>>): list<class-string<Reaction>>)|null */
+    private ?Closure $policy = null;
+
+    /**
+     * Register the single policy that receives the reactions configured for the verdict and returns the reactions to run.
+     *
+     * @param  Closure(Request, Detection, list<class-string<Reaction>>): list<class-string<Reaction>>  $policy
+     */
+    public function usePolicy(Closure $policy): void {
+        $this->policy = $policy;
+    }
+
+    /**
+     * The reactions to run for the detection: those configured for its verdict, passed through the policy when one is registered.
+     *
+     * @return list<class-string<Reaction>>
+     */
+    public function resolveReactions(Request $request, Detection $detection): array {
+        /** @var list<class-string<Reaction>> $reactions */
+        $reactions = config()->array('bot-detector.reactions.'.$detection->verdict->value, []);
+
+        return $this->policy instanceof Closure ? ($this->policy)($request, $detection, $reactions) : $reactions;
+    }
 
     /** Inspect the request, computing the detection once and reusing it for the rest of the request. */
     public function detect(Request $request): Detection {
