@@ -92,6 +92,14 @@ return [
     ],
 
     /*
+     * The rules that recognise bots and HTTP libraries from the User-Agent are slow to load, so they are cached
+     * in this store (null for the app default). They never expire: updating the package uses new keys.
+     */
+    'device_detector' => [
+        'cache_store' => 'file',
+    ],
+
+    /*
      * The reactions the `bot-detector` middleware runs for each verdict, all of them and in order: the request
      * is denied when any reaction denies. Add your own classes implementing
      * SimoneCerruti\BotDetector\Contracts\Reaction. Human requests run no reactions.

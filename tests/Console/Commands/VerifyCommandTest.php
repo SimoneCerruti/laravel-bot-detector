@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Event;
+use SimoneCerruti\BotDetector\Events\BotDetected;
 use SimoneCerruti\BotDetector\Reactions\Block;
 use SimoneCerruti\BotDetector\Reactions\Log;
 use SimoneCerruti\BotDetector\Signals\MissingAccept;
@@ -66,5 +67,5 @@ it('runs no reactions, writes no log and dispatches no event', function (): void
         ->assertSuccessful();
 
     expect(findLogRecords())->toBeEmpty();
-    Event::assertNothingDispatched();
+    Event::assertNotDispatched(BotDetected::class);
 });

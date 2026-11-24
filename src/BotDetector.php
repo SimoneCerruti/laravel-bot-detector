@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace SimoneCerruti\BotDetector;
 
 use Closure;
+use DeviceDetector\Cache\PSR16Bridge;
 use DeviceDetector\DeviceDetector;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use SimoneCerruti\BotDetector\Contracts\Reaction;
 use SimoneCerruti\BotDetector\Contracts\Signal;
@@ -111,7 +113,11 @@ final class BotDetector {
             return [null, null];
         }
 
+        /** @var ?string $store */
+        $store = config('bot-detector.device_detector.cache_store');
+
         $detector = new DeviceDetector($user_agent);
+        $detector->setCache(new PSR16Bridge(Cache::store($store)));
         $detector->parse();
 
         $bot = $detector->getBot();
