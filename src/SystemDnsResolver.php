@@ -37,7 +37,7 @@ final class SystemDnsResolver implements DnsResolver {
      */
     private function lookup(string $name, string $type): ?array {
         try {
-            $answer = new Resolver()->query($name, $type)->answer;
+            $answer = new Resolver(['timeout' => config()->float('bot-detector.good_bots.dns_timeout')])->query($name, $type)->answer;
         } catch (Exception $exception) {
             return $exception->getCode() === Error::DNS_NXDOMAIN->value ? [] : null;
         }
