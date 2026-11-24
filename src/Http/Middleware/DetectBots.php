@@ -6,14 +6,16 @@ namespace SimoneCerruti\BotDetector\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use SimoneCerruti\BotDetector\BotDetector;
 use SimoneCerruti\BotDetector\Contracts\Reaction;
 use SimoneCerruti\BotDetector\Enums\Decision;
+use Symfony\Component\HttpFoundation\IpUtils;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Runs all the reactions configured for the request's verdict, in order, and denies the request when any of them denies,
- * unless `bot-detector.dry_run` is on.
+ * unless `bot-detector.dry_run` is on. Requests matching `bot-detector.except_paths` or `bot-detector.except_ips` skip detection entirely.
  *
  * @internal
  */
@@ -26,6 +28,15 @@ final readonly class DetectBots {
      * @param  Closure(Request): Response  $next
      */
     public function handle(Request $request, Closure $next): Response {
+        /** @var list<string> $except_paths */
+        $except_paths = config()->array('bot-detector.except_paths', []);
+        /** @var list<string> $except_ips */
+        $except_ips = config()->array('bot-detector.except_ips', []);
+
+        if (Str::is($except_paths, $request->path()) || IpUtils::checkIp((string) $request->ip(), $except_ips)) {
+            return $next($request);
+        }
+
         $detection = $this->detector->detect($request);
 
         /** @var list<class-string<Reaction>> $reactions */
