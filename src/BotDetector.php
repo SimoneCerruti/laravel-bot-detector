@@ -38,6 +38,8 @@ final class BotDetector {
     /**
      * The reactions to run for the detection: those configured for its verdict, passed through the policy when one is registered.
      *
+     * @internal Called by the bot-detector middleware; not covered by semver.
+     *
      * @return list<class-string<Reaction>>
      */
     public function resolveReactions(Request $request, Detection $detection): array {
