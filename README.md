@@ -236,15 +236,12 @@ use SimoneCerruti\BotDetector\Data\Detection;
 use SimoneCerruti\BotDetector\Enums\Decision;
 use Symfony\Component\HttpFoundation\Response;
 
-final class TurnstileChallenge implements Reaction, RespondsToDeny
-{
-    public function decide(Request $request, Detection $detection): Decision
-    {
+final class TurnstileChallenge implements Reaction, RespondsToDeny {
+    public function decide(Request $request, Detection $detection): Decision {
         return $request->session()->get('turnstile_passed') ? Decision::Allow : Decision::Deny;
     }
 
-    public function denyResponse(Request $request, Detection $detection): Response
-    {
+    public function denyResponse(Request $request, Detection $detection): Response {
         $request->session()->put('url.intended', $request->fullUrl());
 
         return redirect()->route('challenge');
@@ -295,8 +292,7 @@ use SimoneCerruti\BotDetector\Data\Detection;
 use SimoneCerruti\BotDetector\Facades\BotDetector;
 use SimoneCerruti\BotDetector\Reactions\Log;
 
-public function boot(): void
-{
+public function boot(): void {
     BotDetector::usePolicy(function (Request $request, Detection $detection, array $reactions): array {
         // Feed readers are automated by nature: log them, never block them.
         if ($request->routeIs('feed') && $detection->isBot()) {
@@ -346,10 +342,8 @@ namespace App\BotSignals;
 use SimoneCerruti\BotDetector\Contracts\Signal;
 use SimoneCerruti\BotDetector\Data\RequestFingerprint;
 
-final class OldChrome implements Signal
-{
-    public function matches(RequestFingerprint $fingerprint): bool
-    {
+final class OldChrome implements Signal {
+    public function matches(RequestFingerprint $fingerprint): bool {
         return preg_match('~Chrome/([1-9]\d)\.~', (string) $fingerprint->user_agent) === 1;
     }
 }
