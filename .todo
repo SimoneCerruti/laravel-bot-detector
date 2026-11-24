@@ -9,3 +9,4 @@
 - [ ] Signal: `Sec-CH-UA-Platform` differs from the UA operating system
 - [ ] Signal: `Accept: */*` on an HTML navigation, or `Accept-Language: *`
 - [ ] Actions per bot category (e.g. block only AI crawlers), using the Matomo category exposed on `Detection`
+- [ ] `bot-detector:log-only` on a route inside a group that already runs `bot-detector` (e.g. `web`) is ignored: Laravel dedupes only identical names, so the plain instance enforces first. Fix: run once per request and let a route's `log-only` win (README documents the workaround: separate route groups)
