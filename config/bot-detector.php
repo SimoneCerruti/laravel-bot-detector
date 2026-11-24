@@ -26,7 +26,10 @@ return [
         'llms.txt',
     ],
 
-    'except_ips' => [],
+    'except_ips' => array_values(array_filter(
+        array_map(trim(...), explode(',', (string) env('BOT_DETECTOR_EXCEPT_IPS', ''))),
+        fn (string $ip): bool => $ip !== '',
+    )),
 
     /*
      * The signals evaluated on every request, each with the weight it adds to the score when it matches.
@@ -58,7 +61,7 @@ return [
      * a legitimate app may serve one of them, such as WordPress under a sub-path.
      */
     'probe_paths' => [
-        'enabled' => false,
+        'enabled' => (bool) env('BOT_DETECTOR_PROBE_PATHS_ENABLED', false),
         'paths' => [
             '.env',
             '.git/config',
@@ -80,8 +83,8 @@ return [
      * Each DNS query gives up after `dns_timeout` seconds; a verification runs up to three queries.
      */
     'good_bots' => [
-        'cache_ttl' => 60 * 60 * 24,
-        'dns_timeout' => 2,
+        'cache_ttl' => (int) env('BOT_DETECTOR_GOOD_BOTS_CACHE_TTL', 60 * 60 * 24),
+        'dns_timeout' => (float) env('BOT_DETECTOR_GOOD_BOTS_DNS_TIMEOUT', 2),
         'bots' => [
             '/Googlebot/i' => ['.googlebot.com', '.google.com'],
             '/bingbot/i' => ['.search.msn.com'],
@@ -96,7 +99,7 @@ return [
      * in this store (null for the app default). They never expire: updating the package uses new keys.
      */
     'device_detector' => [
-        'cache_store' => 'file',
+        'cache_store' => env('BOT_DETECTOR_CACHE_STORE', 'file'),
     ],
 
     /*
@@ -116,9 +119,9 @@ return [
      * storing its address: turn on `raw_ip` to log the address itself.
      */
     'log' => [
-        'channel' => null,
-        'level' => 'info',
-        'raw_ip' => false,
+        'channel' => env('BOT_DETECTOR_LOG_CHANNEL'),
+        'level' => env('BOT_DETECTOR_LOG_LEVEL', 'info'),
+        'raw_ip' => (bool) env('BOT_DETECTOR_LOG_RAW_IP', false),
     ],
 
     /*
@@ -127,8 +130,8 @@ return [
      * a 429 and a `Retry-After` header saying how many seconds to wait.
      */
     'throttle' => [
-        'max_requests' => 30,
-        'per_seconds' => 60,
+        'max_requests' => (int) env('BOT_DETECTOR_THROTTLE_MAX_REQUESTS', 30),
+        'per_seconds' => (int) env('BOT_DETECTOR_THROTTLE_PER_SECONDS', 60),
     ],
 
     /*
@@ -139,8 +142,8 @@ return [
      * listeners until dry run is off.
      */
     'dry_run' => [
-        'enabled' => true,
-        'dispatch_events' => true,
+        'enabled' => (bool) env('BOT_DETECTOR_DRY_RUN', true),
+        'dispatch_events' => (bool) env('BOT_DETECTOR_DRY_RUN_DISPATCH_EVENTS', true),
     ],
 
     /*

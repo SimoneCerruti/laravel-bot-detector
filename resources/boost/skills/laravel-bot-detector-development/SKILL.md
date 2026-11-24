@@ -44,7 +44,7 @@ Protect a Laravel app from bots through the package's public API, rolled out so 
 
 ### 5. Keep dry run on until tuned
 
-- Leave `dry_run.enabled` true for the first deploy. Tell the user to collect about a week of `Bot detected` logs, adjust `signals` weights, `suspicious_at`, `automated_at` and the excepts, then set `dry_run.enabled` to false.
+- Leave `dry_run.enabled` true for the first deploy. Tell the user to collect about a week of `Bot detected` logs, adjust `signals` weights, `suspicious_at`, `automated_at` and the excepts, then set `BOT_DETECTOR_DRY_RUN=false` in that environment's `.env` (or `dry_run.enabled` to false).
 - Explain a single visitor with `php artisan bot-detector:verify {ip} "{ua}" --header="Name: value"`.
 - Done when enforcement is either still in dry run, or the user confirmed tuning is finished.
 
