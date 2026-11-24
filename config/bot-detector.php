@@ -90,8 +90,8 @@ return [
     ],
 
     /*
-     * Matomo parses its User-Agent regexes from YAML on every request unless they are cached. They are cached
-     * forever, under keys that include Matomo's version, in this cache store (null for the app default).
+     * The rules that recognise bots and HTTP libraries from the User-Agent are slow to load, so they are cached
+     * in this store (null for the app default). They never expire: updating the package uses new keys.
      */
     'device_detector' => [
         'cache_store' => 'file',

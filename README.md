@@ -418,7 +418,7 @@ All options live in `config/bot-detector.php`; the published file documents each
 | `probe_paths.paths` | `.env`, `wp-login.php`, `phpmyadmin`, ... | the probe paths, `*` as wildcard |
 | `good_bots.bots` | Googlebot, Bingbot, Applebot, DuckDuckBot, YandexBot | User-Agent regex => allowed hostname suffixes |
 | `good_bots.cache_ttl` | `86400` | seconds a DNS confirmation stays cached |
-| `device_detector.cache_store` | `file` | cache store holding Matomo's parsed User-Agent regexes (`null` for the app default) |
+| `device_detector.cache_store` | `file` | cache store holding the User-Agent rules that recognise bots (`null` for the app default) |
 | `reactions` | see [Reactions](#reactions) | verdict => reactions to run |
 | `log.channel` | `null` (app default) | log channel of the `Log` reaction |
 | `log.level` | `info` | log level of the `Log` reaction |
