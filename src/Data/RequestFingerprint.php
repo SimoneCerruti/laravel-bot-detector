@@ -22,6 +22,8 @@ final class RequestFingerprint extends Data {
         public readonly ?string $sec_fetch_site,
         public readonly ?string $sec_ch_ua,
         public readonly string $path,
+        public readonly string $method,
+        public readonly ?string $route,
     ) {}
 
     public static function fromRequest(Request $request): self {
@@ -35,6 +37,9 @@ final class RequestFingerprint extends Data {
             sec_fetch_site: $request->headers->get('Sec-Fetch-Site'),
             sec_ch_ua: $request->headers->get('Sec-CH-UA'),
             path: $request->path(),
+            method: $request->method(),
+            // Null for an unnamed route, or when the detection runs before routing.
+            route: $request->route()?->getName(),
         );
     }
 }

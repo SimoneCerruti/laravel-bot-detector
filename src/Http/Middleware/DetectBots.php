@@ -12,7 +12,7 @@ use SimoneCerruti\BotDetector\Enums\Decision;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Runs the reactions configured for the request's verdict, in order, and denies the request at the first denying reaction,
+ * Runs all the reactions configured for the request's verdict, in order, and denies the request when any of them denies,
  * unless `bot-detector.dry_run` is on.
  *
  * @internal
@@ -31,9 +31,10 @@ final readonly class DetectBots {
         /** @var list<class-string<Reaction>> $reactions */
         $reactions = config()->array('bot-detector.reactions.'.$detection->verdict->value, []);
 
-        $denied = array_any($reactions, fn (string $reaction): bool => app($reaction)->decide($request, $detection) === Decision::Deny);
+        // Every reaction runs, so one after a denying reaction, such as Log after Block, still sees the request.
+        $decisions = array_map(fn (string $reaction): Decision => app($reaction)->decide($request, $detection), $reactions);
 
-        if ($denied && ! config()->boolean('bot-detector.dry_run')) {
+        if (\in_array(Decision::Deny, $decisions, true) && ! config()->boolean('bot-detector.dry_run')) {
             return response('', config()->integer('bot-detector.deny_status'));
         }
 

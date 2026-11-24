@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use SimoneCerruti\BotDetector\Reactions\Block;
+use SimoneCerruti\BotDetector\Reactions\Log;
 use SimoneCerruti\BotDetector\Signals\HeadlessChrome;
 use SimoneCerruti\BotDetector\Signals\MissingAccept;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptEncoding;
@@ -74,14 +75,25 @@ return [
     ],
 
     /*
-     * The reactions the `bot-detector` middleware runs for each verdict, in order: the request is denied
-     * at the first reaction that denies. Add your own classes implementing
+     * The reactions the `bot-detector` middleware runs for each verdict, all of them and in order: the request
+     * is denied when any reaction denies. Add your own classes implementing
      * SimoneCerruti\BotDetector\Contracts\Reaction. Human requests run no reactions.
      */
     'reactions' => [
         'good_bot' => [],
-        'suspicious' => [],
-        'automated' => [Block::class],
+        'suspicious' => [Log::class],
+        'automated' => [Log::class, Block::class],
+    ],
+
+    /*
+     * Where the Log reaction writes a detection: the channel (null for the app default) and the level.
+     * The IP is logged as an HMAC keyed by the app key, so the same client stays recognisable without
+     * storing its address: turn on `raw_ip` to log the address itself.
+     */
+    'log' => [
+        'channel' => null,
+        'level' => 'info',
+        'raw_ip' => false,
     ],
 
     /*

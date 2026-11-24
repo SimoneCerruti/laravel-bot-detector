@@ -53,6 +53,8 @@ it('serialises to an array', function (): void {
             'sec_fetch_site' => 'none',
             'sec_ch_ua' => '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
             'path' => '/',
+            'method' => 'GET',
+            'route' => null,
         ],
     ]);
 });

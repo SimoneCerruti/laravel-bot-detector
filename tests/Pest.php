@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
+use Monolog\LogRecord;
 use SimoneCerruti\BotDetector\Contracts\DnsResolver;
 use SimoneCerruti\BotDetector\Tests\Fixtures\FakeDnsResolver;
 use SimoneCerruti\BotDetector\Tests\TestCase;
@@ -46,4 +50,25 @@ function bindFakeDns(array $hostnames = [], array $addresses = []): FakeDnsResol
     app()->instance(DnsResolver::class, $resolver);
 
     return $resolver;
+}
+
+/** Register a log channel that keeps its records in memory, read back with findLogRecords(). */
+function registerLogChannel(string $channel = 'memory'): void {
+    config(["logging.channels.{$channel}" => ['driver' => 'monolog', 'handler' => TestHandler::class]]);
+}
+
+/**
+ * The records written to a channel registered with registerLogChannel().
+ *
+ * @return list<LogRecord>
+ */
+function findLogRecords(string $channel = 'memory'): array {
+    /** @var Illuminate\Log\Logger $logger */
+    $logger = Log::channel($channel);
+    /** @var Logger $monolog */
+    $monolog = $logger->getLogger();
+    /** @var TestHandler $handler */
+    $handler = $monolog->getHandlers()[0];
+
+    return array_values($handler->getRecords());
 }
