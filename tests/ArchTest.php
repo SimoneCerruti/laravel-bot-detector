@@ -12,6 +12,7 @@ use SimoneCerruti\BotDetector\Contracts\Signal;
 use SimoneCerruti\BotDetector\Data\Detection;
 use SimoneCerruti\BotDetector\Data\RequestFingerprint;
 use SimoneCerruti\BotDetector\Enums\Decision;
+use SimoneCerruti\BotDetector\Enums\Reason;
 use SimoneCerruti\BotDetector\Enums\Verdict;
 use SimoneCerruti\BotDetector\Events\BotDetected;
 use SimoneCerruti\BotDetector\Facades\BotDetector as BotDetectorFacade;
@@ -36,6 +37,7 @@ const PUBLIC_API = [
     Detection::class,
     RequestFingerprint::class,
     Verdict::class,
+    Reason::class,
     MissingAcceptLanguage::class,
     MissingAccept::class,
     MissingAcceptEncoding::class,

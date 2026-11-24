@@ -20,7 +20,7 @@ it('tells whether the request is a verified good bot', function (): void {
     expect(BotDetector::detect(browserRequest($googlebot, ip: '192.0.2.1')))
         ->isGoodBot()->toBeTrue()
         ->isBot()->toBeTrue()
-        ->toArray()->toMatchArray(['verdict' => 'good_bot', 'verified' => true])
+        ->toArray()->toMatchArray(['verdict' => 'good_bot', 'reason' => 'verified_good_bot'])
         ->and(BotDetector::detect(browserRequest($googlebot, ip: '192.0.2.2'))->isGoodBot())->toBeFalse()
         ->and(BotDetector::detect(browserRequest())->isGoodBot())->toBeFalse();
 });
@@ -42,7 +42,7 @@ it('serialises to an array', function (): void {
         'signals' => [MissingAcceptLanguage::class => 3],
         'claimed_as' => null,
         'category' => null,
-        'verified' => null,
+        'reason' => 'score',
         'fingerprint' => [
             'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
             'ip' => '127.0.0.1',

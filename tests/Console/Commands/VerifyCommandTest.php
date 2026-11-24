@@ -42,9 +42,10 @@ it('verifies a good-bot claim by DNS', function (): void {
     bindFakeDns(['66.249.66.1' => ['crawl-66-249-66-1.googlebot.com']], ['crawl-66-249-66-1.googlebot.com' => ['66.249.66.1']]);
 
     $this->artisan('bot-detector:verify', ['ip' => '66.249.66.1', 'ua' => GOOGLEBOT])
+        // Before 'good_bot', which the Reason line would satisfy too.
+        ->expectsOutputToContain('verified_good_bot')
         ->expectsOutputToContain('good_bot')
         ->expectsOutputToContain('Googlebot')
-        ->expectsOutputToContain('yes')
         ->assertSuccessful();
 });
 
