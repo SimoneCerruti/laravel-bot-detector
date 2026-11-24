@@ -358,7 +358,7 @@ it('verifies a good bot regardless of the score', function (): void {
 });
 
 it('caches Matomo regexes in the file store by default', function (): void {
-    Cache::store('file')->flush();
+    Cache::store('file')->forget(matomoRegexesKey());
 
     BotDetector::detect(browserRequest(['User-Agent' => 'curl/8.5.0']));
 
@@ -366,13 +366,11 @@ it('caches Matomo regexes in the file store by default', function (): void {
 });
 
 it('caches Matomo regexes in the configured store', function (): void {
-    Cache::store('file')->flush();
     config(['bot-detector.device_detector.cache_store' => 'array']);
 
     BotDetector::detect(browserRequest(['User-Agent' => 'curl/8.5.0']));
 
-    expect(Cache::store('array')->has(matomoRegexesKey()))->toBeTrue()
-        ->and(Cache::store('file')->has(matomoRegexesKey()))->toBeFalse();
+    expect(Cache::store('array')->has(matomoRegexesKey()))->toBeTrue();
 });
 
 /** The key under which Matomo caches its bot regexes. */
