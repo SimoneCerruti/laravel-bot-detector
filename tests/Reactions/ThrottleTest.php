@@ -9,7 +9,7 @@ beforeEach(function (): void {
     // Retry-After counts whole seconds: a slow runner crossing a second boundary would make it 59.
     $this->freezeTime();
     Route::get('protected', fn (): string => 'content')->middleware('bot-detector');
-    config(['bot-detector.dry_run' => false, 'bot-detector.reactions.automated' => [Throttle::class]]);
+    config(['bot-detector.dry_run.enabled' => false, 'bot-detector.reactions.automated' => [Throttle::class]]);
 });
 
 it('lets requests through up to the limit', function (): void {
@@ -52,7 +52,7 @@ it('counts each IP and User-Agent separately', function (): void {
 });
 
 it('lets a throttled request through in dry run', function (): void {
-    config(['bot-detector.dry_run' => true, 'bot-detector.throttle.max_requests' => 1]);
+    config(['bot-detector.dry_run.enabled' => true, 'bot-detector.throttle.max_requests' => 1]);
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();

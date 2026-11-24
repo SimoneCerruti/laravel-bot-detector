@@ -12,12 +12,14 @@ use SimoneCerruti\BotDetector\Contracts\Reaction;
 use SimoneCerruti\BotDetector\Contracts\RespondsToDeny;
 use SimoneCerruti\BotDetector\Enums\Decision;
 use SimoneCerruti\BotDetector\Enums\Mode;
+use SimoneCerruti\BotDetector\Events\BotDetected;
 use Symfony\Component\HttpFoundation\IpUtils;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Runs all the reactions configured for the request's verdict (or returned by the `BotDetector::usePolicy()` closure), in order, and denies the request with the first denying reaction's response when any of them denies,
- * unless `bot-detector.dry_run` is on or the route uses `bot-detector:log-only`. Requests matching `bot-detector.except_paths` or `bot-detector.except_ips` skip detection entirely.
+ * unless `bot-detector.dry_run.enabled` is on or the route uses `bot-detector:log-only`. Requests matching `bot-detector.except_paths` or `bot-detector.except_ips` skip detection entirely.
+ * Every non-human verdict dispatches `BotDetected`, unless `bot-detector.dry_run.dispatch_events` is off during dry run.
  *
  * @internal
  */
@@ -43,6 +45,11 @@ final readonly class DetectBots {
         }
 
         $detection = $this->detector->detect($request);
+        $dry_run = config()->boolean('bot-detector.dry_run.enabled');
+
+        if ($detection->isBot() && (! $dry_run || config()->boolean('bot-detector.dry_run.dispatch_events'))) {
+            event(new BotDetected($detection, $request, $dry_run));
+        }
 
         $reactions = array_map(fn (string $class): Reaction => app($class), $this->detector->resolveReactions($request, $detection));
 
@@ -53,7 +60,7 @@ final readonly class DetectBots {
 
         $lets_through = $denying === false
             || $route_mode?->shouldLetThrough() === true
-            || config()->boolean('bot-detector.dry_run');
+            || $dry_run;
 
         if ($lets_through) {
             return $next($request);

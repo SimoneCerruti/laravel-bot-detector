@@ -12,6 +12,7 @@ use SimoneCerruti\BotDetector\Data\Detection;
 use SimoneCerruti\BotDetector\Data\RequestFingerprint;
 use SimoneCerruti\BotDetector\Enums\Decision;
 use SimoneCerruti\BotDetector\Enums\Verdict;
+use SimoneCerruti\BotDetector\Events\BotDetected;
 use SimoneCerruti\BotDetector\Facades\BotDetector as BotDetectorFacade;
 use SimoneCerruti\BotDetector\Reactions\Block;
 use SimoneCerruti\BotDetector\Reactions\Log;
@@ -46,6 +47,7 @@ const PUBLIC_API = [
     Log::class,
     RespondsToDeny::class,
     Throttle::class,
+    BotDetected::class,
 ];
 
 arch()->preset()->php();
