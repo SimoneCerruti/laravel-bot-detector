@@ -13,6 +13,7 @@ use SimoneCerruti\BotDetector\Enums\Decision;
 use SimoneCerruti\BotDetector\Enums\Verdict;
 use SimoneCerruti\BotDetector\Facades\BotDetector as BotDetectorFacade;
 use SimoneCerruti\BotDetector\Reactions\Block;
+use SimoneCerruti\BotDetector\Reactions\Log;
 use SimoneCerruti\BotDetector\Signals\HeadlessChrome;
 use SimoneCerruti\BotDetector\Signals\MissingAccept;
 use SimoneCerruti\BotDetector\Signals\MissingAcceptEncoding;
@@ -40,6 +41,7 @@ const PUBLIC_API = [
     Reaction::class,
     Decision::class,
     Block::class,
+    Log::class,
 ];
 
 arch()->preset()->php();

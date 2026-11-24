@@ -94,7 +94,9 @@ it('exposes what arrived in the fingerprint', function (): void {
         ->and($fingerprint->accept_encoding)->toBe('gzip')
         ->and($fingerprint->sec_fetch_site)->toBe('same-origin')
         ->and($fingerprint->sec_ch_ua)->toBe('"Chromium";v="131"')
-        ->and($fingerprint->path)->toBe('blog/post');
+        ->and($fingerprint->path)->toBe('blog/post')
+        ->and($fingerprint->method)->toBe('GET')
+        ->and($fingerprint->route)->toBeNull();
 });
 
 it('exposes a plain-HTTP request as not secure', function (): void {

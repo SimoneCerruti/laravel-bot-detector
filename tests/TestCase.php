@@ -21,5 +21,8 @@ abstract class TestCase extends Orchestra {
     protected function defineEnvironment($app): void {
         // No test touches the network: every IP has no DNS records unless a test binds its own answers.
         $app->instance(DnsResolver::class, new FakeDnsResolver);
+
+        // Testbench ships without an app key, which every real app has and the Log reaction hashes IPs with.
+        $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('k', 32)));
     }
 }
