@@ -128,6 +128,15 @@ return [
     'dry_run' => true,
 
     /*
+     * The `bot-detector` middleware dispatches SimoneCerruti\BotDetector\Events\BotDetected for every
+     * non-human verdict, carrying the Detection, the Request and the dry run flag. Turn off
+     * `dispatch_in_dry_run` to silence your listeners until dry run is off.
+     */
+    'events' => [
+        'dispatch_in_dry_run' => true,
+    ],
+
+    /*
      * The status of the empty response a denied request gets, unless the first denying reaction
      * implements SimoneCerruti\BotDetector\Contracts\RespondsToDeny and provides its own.
      */

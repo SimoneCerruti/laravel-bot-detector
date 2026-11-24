@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use SimoneCerruti\BotDetector\Data\Detection;
+use SimoneCerruti\BotDetector\Enums\Verdict;
+use SimoneCerruti\BotDetector\Events\BotDetected;
 use SimoneCerruti\BotDetector\Facades\BotDetector;
 use SimoneCerruti\BotDetector\Reactions\Log;
 use SimoneCerruti\BotDetector\Tests\Fixtures\AllowingReaction;
@@ -235,4 +238,49 @@ it('keeps the configured behaviour when the policy returns the given reactions',
     $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertForbidden();
 
     expect(findLogRecords())->toHaveCount(1);
+});
+
+it('dispatches BotDetected once with the detection and the request', function (): void {
+    Event::fake([BotDetected::class]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected');
+
+    Event::assertDispatchedTimes(BotDetected::class, 1);
+    Event::assertDispatched(BotDetected::class, fn (BotDetected $event): bool => $event->detection->verdict === Verdict::Automated
+        && $event->request->path() === 'protected');
+});
+
+it('does not dispatch BotDetected for a human request', function (): void {
+    Event::fake([BotDetected::class]);
+
+    $this->withHeader('User-Agent', CHROME)->get('protected');
+
+    Event::assertNotDispatched(BotDetected::class);
+});
+
+it('tells BotDetected whether dry run is on', function (bool $dry_run): void {
+    Event::fake([BotDetected::class]);
+    config(['bot-detector.dry_run' => $dry_run]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected');
+
+    Event::assertDispatched(BotDetected::class, fn (BotDetected $event): bool => $event->dry_run === $dry_run);
+})->with([true, false]);
+
+it('silences BotDetected in dry run when dispatch_in_dry_run is off', function (): void {
+    Event::fake([BotDetected::class]);
+    config(['bot-detector.events.dispatch_in_dry_run' => false]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected');
+
+    Event::assertNotDispatched(BotDetected::class);
+});
+
+it('still dispatches BotDetected outside dry run when dispatch_in_dry_run is off', function (): void {
+    Event::fake([BotDetected::class]);
+    config(['bot-detector.dry_run' => false, 'bot-detector.events.dispatch_in_dry_run' => false]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected');
+
+    Event::assertDispatchedTimes(BotDetected::class, 1);
 });
