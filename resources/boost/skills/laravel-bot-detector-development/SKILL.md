@@ -30,6 +30,7 @@ Protect a Laravel app from bots through the package's public API, rolled out so 
 ### 3. Protect the routes
 
 - Add the `bot-detector` route middleware: `Route::middleware('bot-detector')->group(...)`. Use `bot-detector:log-only` for routes to observe without ever enforcing.
+- Never append `bot-detector` to the `web` group: `log-only` is ignored on a route that already runs `bot-detector`, because Laravel dedupes only identical middleware names and the plain one enforces first. Put protected routes in a `Route::middleware('bot-detector')->group(...)` and observed routes in a separate `Route::middleware('bot-detector:log-only')->group(...)`.
 - Put machine-only endpoints (webhooks, health checks) in `except_paths`, trusted callers in `except_ips`.
 - Done when every route to protect carries the middleware and every machine-only endpoint is excepted.
 

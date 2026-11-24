@@ -88,6 +88,8 @@ Route::middleware('bot-detector')->group(function () {
 });
 ```
 
+Add it to route groups rather than appending it to the `web` middleware group: a route that already runs `bot-detector` cannot switch to `log-only` (see [Never enforce on some routes](#never-enforce-on-some-routes)).
+
 With the default configuration this is what happens on those routes:
 
 | Verdict | Reactions | Effect in dry run (default) | Effect when enforcing |
@@ -212,6 +214,19 @@ To keep watching a route without ever blocking it, use the `log-only` mode. Reac
 
 ```php
 Route::get('/pricing', PricingController::class)->middleware('bot-detector:log-only');
+```
+
+`log-only` has no effect on a route that already gets `bot-detector` from a group, for example when you append it to `web` with `$middleware->appendToGroup('web', 'bot-detector')`. Laravel removes only identical middleware names, so the plain `bot-detector` runs first and enforces. Do not append `bot-detector` to `web`. Put the routes to protect in one group and the routes to observe in another:
+
+```php
+Route::middleware('bot-detector')->group(function () {
+    Route::get('/', HomeController::class);
+    Route::post('/contact', ContactController::class);
+});
+
+Route::middleware('bot-detector:log-only')->group(function () {
+    Route::get('/pricing', PricingController::class);
+});
 ```
 
 An unknown mode, such as a typo in `bot-detector:log-onyl`, throws an error instead of silently enforcing.
