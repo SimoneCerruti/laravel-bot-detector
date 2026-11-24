@@ -77,9 +77,11 @@ return [
      * a hostname ending with one of the suffixes, and that hostname must resolve to the same IP.
      * Verified gets GoodBot, a mismatch gets Automated, a DNS error gets Suspicious (and is retried).
      * Confirmed hostnames are cached per IP for `cache_ttl` seconds in the default cache store.
+     * Each DNS query gives up after `dns_timeout` seconds; a verification runs up to three queries.
      */
     'good_bots' => [
         'cache_ttl' => 60 * 60 * 24,
+        'dns_timeout' => 2,
         'bots' => [
             '/Googlebot/i' => ['.googlebot.com', '.google.com'],
             '/bingbot/i' => ['.search.msn.com'],

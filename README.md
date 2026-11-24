@@ -113,7 +113,7 @@ Each request gets exactly one verdict. The rules below are checked in this order
 1. **Claims to be a known good bot.** The User-Agent matches one of the `good_bots` patterns (Googlebot, Bingbot, Applebot, DuckDuckBot and YandexBot by default). The package checks the claim by DNS: the IP must point back to a hostname of that bot (such as `crawl-66-249-66-1.googlebot.com`) and that hostname must point to the same IP.
    - Confirmed: `good_bot`.
    - Not confirmed: `automated`, because anybody can write "Googlebot" in a User-Agent.
-   - DNS failed: `suspicious`, so a DNS outage never blocks the real crawler. The check is retried on the next request.
+   - DNS failed: `suspicious`, so a DNS outage never blocks the real crawler. The check is retried on the next request. Each DNS query gives up after 2 seconds (`good_bots.dns_timeout`), so a slow DNS server cannot hold a worker for long.
 
    Confirmed answers are cached per IP for 24 hours (`good_bots.cache_ttl`).
 2. **Declares itself a bot or an HTTP library.** SEO crawlers, AI crawlers, uptime monitors, social link previews, `curl`, `python-requests` and similar tools are recognised from the User-Agent: `automated`.
@@ -418,6 +418,7 @@ All options live in `config/bot-detector.php`; the published file documents each
 | `probe_paths.paths` | `.env`, `wp-login.php`, `phpmyadmin`, ... | the probe paths, `*` as wildcard |
 | `good_bots.bots` | Googlebot, Bingbot, Applebot, DuckDuckBot, YandexBot | User-Agent regex => allowed hostname suffixes |
 | `good_bots.cache_ttl` | `86400` | seconds a DNS confirmation stays cached |
+| `good_bots.dns_timeout` | `2` | seconds each DNS query waits before it counts as a DNS error |
 | `device_detector.cache_store` | `file` | cache store holding the User-Agent rules that recognise bots (`null` for the app default) |
 | `reactions` | see [Reactions](#reactions) | verdict => reactions to run |
 | `log.channel` | `null` (app default) | log channel of the `Log` reaction |
