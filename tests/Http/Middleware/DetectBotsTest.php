@@ -108,3 +108,42 @@ it('logs neither a human request nor a verified good bot by default', function (
 
     expect(findLogRecords())->toBeEmpty();
 });
+
+it('skips detection entirely for the default except paths', function (): void {
+    config(['bot-detector.dry_run' => false]);
+    Route::get('up', fn (): string => 'content')->middleware('bot-detector');
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('up')->assertOk();
+
+    expect(findLogRecords())->toBeEmpty();
+});
+
+it('skips except paths matching a wildcard', function (): void {
+    config(['bot-detector.dry_run' => false]);
+    Route::get('sitemap-posts.xml', fn (): string => 'content')->middleware('bot-detector');
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('sitemap-posts.xml')->assertOk();
+});
+
+it('skips a custom except path and still enforces the others', function (): void {
+    config(['bot-detector.dry_run' => false, 'bot-detector.except_paths' => ['protected']]);
+    Route::get('up', fn (): string => 'content')->middleware('bot-detector');
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertOk();
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('up')->assertForbidden();
+});
+
+it('skips detection entirely for an except ip', function (): void {
+    config(['bot-detector.dry_run' => false, 'bot-detector.except_ips' => ['192.0.2.1']]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->withServerVariables(['REMOTE_ADDR' => '192.0.2.1'])->get('protected')->assertOk();
+
+    expect(findLogRecords())->toBeEmpty();
+});
+
+it('skips an ip inside an except CIDR range and still enforces the others', function (): void {
+    config(['bot-detector.dry_run' => false, 'bot-detector.except_ips' => ['10.0.0.0/8']]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->withServerVariables(['REMOTE_ADDR' => '10.1.2.3'])->get('protected')->assertOk();
+    $this->withHeader('User-Agent', 'curl/8.5.0')->withServerVariables(['REMOTE_ADDR' => '192.0.2.1'])->get('protected')->assertForbidden();
+});

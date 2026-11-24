@@ -14,6 +14,20 @@ use SimoneCerruti\BotDetector\Signals\MissingSecFetchSite;
 return [
 
     /*
+     * The `bot-detector` middleware skips detection entirely, running no reactions, for requests to these
+     * paths or from these IPs. Paths have no leading slash and `*` matches anything; IPs are
+     * addresses or CIDR ranges, such as `10.0.0.0/8`.
+     */
+    'except_paths' => [
+        'up',
+        'robots.txt',
+        'sitemap*.xml',
+        'llms.txt',
+    ],
+
+    'except_ips' => [],
+
+    /*
      * The signals evaluated on every request, each with the weight it adds to the score when it matches.
      * Add your own classes implementing SimoneCerruti\BotDetector\Contracts\Signal, remove a signal
      * to disable it, or change a weight to tune it.
