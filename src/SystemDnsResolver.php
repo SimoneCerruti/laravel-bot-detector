@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SimoneCerruti\BotDetector;
 
+use Closure;
 use NetDNS2\ENUM\Error;
 use NetDNS2\Exception;
 use NetDNS2\Resolver;
@@ -18,7 +19,15 @@ use SimoneCerruti\BotDetector\Contracts\DnsResolver;
  *
  * @internal
  */
-final class SystemDnsResolver implements DnsResolver {
+final readonly class SystemDnsResolver implements DnsResolver {
+    /** @var Closure(string, string, float): array<RR> */
+    private Closure $query;
+
+    /** @param  (Closure(string, string, float): array<RR>)|null  $query  runs one query (name, type, timeout); tests pass their own answers */
+    public function __construct(?Closure $query = null) {
+        $this->query = $query ?? fn (string $name, string $type, float $timeout): array => new Resolver(['timeout' => $timeout])->query($name, $type)->answer;
+    }
+
     public function lookupHostnames(string $ip): ?array {
         return $this->lookup($ip, 'PTR');
     }
@@ -37,7 +46,7 @@ final class SystemDnsResolver implements DnsResolver {
      */
     private function lookup(string $name, string $type): ?array {
         try {
-            $answer = new Resolver(['timeout' => config()->float('bot-detector.good_bots.dns_timeout')])->query($name, $type)->answer;
+            $answer = ($this->query)($name, $type, config()->float('bot-detector.good_bots.dns_timeout'));
         } catch (Exception $exception) {
             return $exception->getCode() === Error::DNS_NXDOMAIN->value ? [] : null;
         }

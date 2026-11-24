@@ -31,6 +31,12 @@
             <exclude>tests/ArchTest.php</exclude>
         </testsuite>
     </testsuites>
+    <groups>
+        <exclude>
+            <!-- Talks to real nameservers, run on its own in CI. -->
+            <group>network</group>
+        </exclude>
+    </groups>
     <source>
         <include>
             <directory suffix=".php">src</directory>
