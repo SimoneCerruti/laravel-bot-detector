@@ -12,6 +12,7 @@ const CHROME = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KH
 
 beforeEach(function (): void {
     Route::get('protected', fn (): string => 'content')->middleware('bot-detector');
+    Route::get('log-only', fn (): string => 'content')->middleware('bot-detector:log-only');
     Route::get('unprotected', fn (): string => 'content');
     registerLogChannel();
     config(['logging.default' => 'memory']);
@@ -176,4 +177,22 @@ it('skips an ip inside an except CIDR range and still enforces the others', func
 
     $this->withHeader('User-Agent', 'curl/8.5.0')->withServerVariables(['REMOTE_ADDR' => '10.1.2.3'])->get('protected')->assertOk();
     $this->withHeader('User-Agent', 'curl/8.5.0')->withServerVariables(['REMOTE_ADDR' => '192.0.2.1'])->get('protected')->assertForbidden();
+});
+
+it('never enforces a denial on a log-only route', function (): void {
+    config(['bot-detector.dry_run' => false]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('protected')->assertForbidden();
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('log-only')
+        ->assertOk()
+        ->assertContent('content');
+});
+
+it('still runs the reactions on a log-only route', function (): void {
+    config(['bot-detector.dry_run' => false]);
+
+    $this->withHeader('User-Agent', 'curl/8.5.0')->get('log-only')->assertOk();
+
+    expect(findLogRecords())->toHaveCount(1)
+        ->and(findLogRecords()[0]->context['verdict'])->toBe('automated');
 });

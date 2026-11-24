@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Runs all the reactions configured for the request's verdict, in order, and denies the request with the first denying reaction's response when any of them denies,
- * unless `bot-detector.dry_run` is on. Requests matching `bot-detector.except_paths` or `bot-detector.except_ips` skip detection entirely.
+ * unless `bot-detector.dry_run` is on or the route uses `bot-detector:log-only`. Requests matching `bot-detector.except_paths` or `bot-detector.except_ips` skip detection entirely.
  *
  * @internal
  */
@@ -28,7 +28,7 @@ final readonly class DetectBots {
     /**
      * @param  Closure(Request): Response  $next
      */
-    public function handle(Request $request, Closure $next): Response {
+    public function handle(Request $request, Closure $next, ?string $mode = null): Response {
         /** @var list<string> $except_paths */
         $except_paths = config()->array('bot-detector.except_paths', []);
         /** @var list<string> $except_ips */
@@ -49,7 +49,7 @@ final readonly class DetectBots {
 
         $denying = array_search(Decision::Deny, $decisions, true);
 
-        if ($denying === false || config()->boolean('bot-detector.dry_run')) {
+        if ($denying === false || $mode === 'log-only' || config()->boolean('bot-detector.dry_run')) {
             return $next($request);
         }
 
