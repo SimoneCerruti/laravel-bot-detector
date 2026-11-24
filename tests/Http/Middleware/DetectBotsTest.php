@@ -196,3 +196,9 @@ it('still runs the reactions on a log-only route', function (): void {
     expect(findLogRecords())->toHaveCount(1)
         ->and(findLogRecords()[0]->context['verdict'])->toBe('automated');
 });
+
+it('rejects an unknown middleware mode', function (): void {
+    Route::get('unknown-mode', fn (): string => 'content')->middleware('bot-detector:log-onyl');
+
+    $this->withoutExceptionHandling()->withHeader('User-Agent', 'curl/8.5.0')->get('unknown-mode');
+})->throws(ValueError::class);

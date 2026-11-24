@@ -11,6 +11,7 @@ use SimoneCerruti\BotDetector\BotDetector;
 use SimoneCerruti\BotDetector\Contracts\Reaction;
 use SimoneCerruti\BotDetector\Contracts\RespondsToDeny;
 use SimoneCerruti\BotDetector\Enums\Decision;
+use SimoneCerruti\BotDetector\Enums\Mode;
 use Symfony\Component\HttpFoundation\IpUtils;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -29,6 +30,9 @@ final readonly class DetectBots {
      * @param  Closure(Request): Response  $next
      */
     public function handle(Request $request, Closure $next, ?string $mode = null): Response {
+        // An unknown mode, such as a typo in `bot-detector:log-onyl`, fails loudly instead of silently enforcing.
+        $route_mode = $mode === null ? null : Mode::from($mode);
+
         /** @var list<string> $except_paths */
         $except_paths = config()->array('bot-detector.except_paths', []);
         /** @var list<string> $except_ips */
@@ -49,7 +53,11 @@ final readonly class DetectBots {
 
         $denying = array_search(Decision::Deny, $decisions, true);
 
-        if ($denying === false || $mode === 'log-only' || config()->boolean('bot-detector.dry_run')) {
+        $lets_through = $denying === false
+            || $route_mode === Mode::LogOnly
+            || config()->boolean('bot-detector.dry_run');
+
+        if ($lets_through) {
             return $next($request);
         }
 
